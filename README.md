@@ -1,43 +1,46 @@
 # FactCheck Debate
 
-政治ニュースのURLを入力すると、7体のAIエージェントが多角的に議論・分析するWebアプリです。
+A web app that analyzes political news from multiple perspectives. Enter a news URL and a **Host** plus **7 panel characters** debate the article and produce a **Credibility Score**, **Bias Meter**, and a **final summary**.
 
-## エージェント
+## Panel
 
-- **Progressive Perspective** — 社会正義・平等の視点
-- **Conservative Perspective** — 伝統・秩序の視点
-- **Devil's Advocate** — 懐疑的・批判的思考
-- **Bias Analyst** — メディア・バイアス分析
-- **Fact-Checker** — ファクトチェック
-- **The Synthesizer** — 客観的統合・比較表
-- **The Pragmatist** — 実務的・中道の分析
+- **Host** — Facilitator; keeps the discussion on topic.
+- **Morgan** (Progressive) — Champion of equality; social justice lens.
+- **Victor** (Conservative) — Guardian of order; tradition and stability.
+- **Skeptica** (Devil's Advocate) — Questions everything; skeptical view.
+- **Lens** (Bias Analyst) — Spots the spin; media bias and framing.
+- **Verify** (Fact-Checker) — Evidence only; verifies claims and sources.
+- **Bridge** (Synthesizer) — Finds common ground; objective synthesis.
+- **Terra** (Pragmatist) — Real-world impact; practical implications.
 
-## セットアップ
+## Setup
 
-1. 依存関係のインストール  
-   `npm install --legacy-peer-deps`
+1. **Install dependencies**
+   ```bash
+   npm install --legacy-peer-deps
+   ```
 
-2. 環境変数  
-   `.env.local` に以下を設定（またはそのまま利用）:
-   - `GEMINI_API_KEY` — Gemini API
-   - `SUPABASE_URL` / `SUPABASE_KEY` — 分析履歴保存（任意）
-   - `FACTCHECK_API_KEY` — 将来のファクトチェックAPI用（任意）
+2. **Environment variables**  
+   Create `.env.local` with:
+   - `OPENAI_API_KEY` — OpenAI API key (required for analysis)
+   - `SUPABASE_URL` / `SUPABASE_KEY` — Optional; for saving analysis history
+   - `FACTCHECK_API_KEY` — Optional; for future fact-check API use
 
-3. Supabase で履歴を保存する場合  
-   `supabase-migration.sql` を Supabase の SQL Editor で実行してテーブルを作成してください。
+3. **Supabase (optional)**  
+   To store analysis history, run `supabase-migration.sql` in the Supabase SQL Editor to create the `analyses` table.
 
-## 起動
+## Run
 
 ```bash
 npm run dev
 ```
 
-ブラウザで http://localhost:3000 を開き、ニュースのURLを入力して「分析する」をクリックしてください。
+Open http://localhost:3000, paste a news article URL, and click **Analyze**. The Host sets the focus, then each panelist speaks in order. The result shows a **Credibility Score** (0–100, color-coded), a **Bias Meter** (Left–Center–Right with confidence), and a **Final summary**.
 
-## 技術スタック
+## Tech stack
 
 - Next.js 14 (App Router)
-- Gemini API (@google/genai)
-- Cheerio（URL本文取得）
-- Supabase（分析履歴・任意）
+- OpenAI API (GPT)
+- Cheerio (URL content extraction)
+- Supabase (optional history)
 - Tailwind CSS
