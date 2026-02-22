@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FactCheck Debate | 政治ニュース多角的分析",
-  description: "URLを入力すると複数の視点のエージェントがニュースを議論・分析します",
+  title: "Polarity — Real-Time Media Bias Analysis",
+  description: "Where does your source actually stand? Polarity evaluates news across the political spectrum using 8 AI panelists and synthesizes a bias score.",
 };
 
 export default function RootLayout({

@@ -2,22 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
 :root {
-  --bg: #0f0f12;
-  --surface: #18181c;
-  --border: #2a2a30;
-  --text: #e4e4e7;
-  --muted: #71717a;
-  --progressive: #22c55e;
-  --conservative: #3b82f6;
-  --devil: #a855f7;
-  --bias: #f59e0b;
-  --fact: #06b6d4;
-  --synthesizer: #ec4899;
-  --pragmatist: #14b8a6;
+  --bg: #F5F4F0;
+  --surface: #FAFAF8;
+  --surface2: #EFEFEB;
+  --border: #E0DED8;
+  --border2: #CCCAC2;
+  --text: #1A1916;
+  --text2: #5A5850;
+  --text3: #9A9890;
+  /* Ad Fontes scale */
+  --far-left: #93C5FD;
+  --left: #3B82F6;
+  --centrist: #64748B;
+  --right: #FCA5A5;
+  --far-right: #DC2626;
+  --accent-blue: #2563EB;
+  --accent-red: #B91C1C;
+  --accent-brown: #8B4512;
+  --green: #15803D;
+  --green-light: #22C55E;
+  --orange: #EA580C;
+  --red-warn: #DC2626;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  /* panel accents */
+  --progressive: #15803D;
+  --conservative: #1D4ED8;
+  --devil: #7C3AED;
+  --bias: #B45309;
+  --fact: #0D9488;
+  --synthesizer: #BE185D;
+  --pragmatist: #64748B;
+  --muted: var(--text3);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
