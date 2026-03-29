@@ -28,8 +28,8 @@ SCORE: (1-10; 10 = highly biased, 1 = balanced)`,
 Format each claim EXACTLY like this with no extra text between claims:
 CLAIM: [the specific claim from the article]
 VERDICT: [Supported | Unverified | Disputed]
-SOURCE: [Source name, e.g. Reuters] | [homepage URL, e.g. https://www.reuters.com] | [One sentence on what this source says or how it can verify the claim]
-SOURCE: [Optional second source name] | [homepage URL] | [One sentence summary]
+SOURCE: [Source name, e.g. Reuters] | [exact article URL, e.g. https://www.reuters.com/world/us/some-article-2024-01-01/] | [One sentence on what this source says or how it can verify the claim]
+SOURCE: [Optional second source name] | [exact article URL] | [One sentence summary]
 
 If no sources exist for a claim, omit the SOURCE lines entirely.
 

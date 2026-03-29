@@ -14,6 +14,44 @@ const MAX_BODY = 6000;
 // Stagger requests to avoid hitting rate limits
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+async function searchTavily(query: string): Promise<Array<{ title: string; url: string; content: string }>> {
+  const key = process.env.TAVILY_API_KEY;
+  if (!key) return [];
+  try {
+    const res = await fetch("https://api.tavily.com/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ api_key: key, query, max_results: 2, search_depth: "basic" }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.results ?? [];
+  } catch {
+    return [];
+  }
+}
+
+async function enrichWithTavilySources(text: string): Promise<string> {
+  if (!process.env.TAVILY_API_KEY) return text;
+  const parts = text.split(/(?=^CLAIM:)/im);
+  const enriched = await Promise.all(
+    parts.map(async (part) => {
+      if (!/^CLAIM:/im.test(part)) return part;
+      const claimMatch = part.match(/^CLAIM:\s*(.+?)(?=\nVERDICT:|$)/im);
+      if (!claimMatch) return part;
+      const results = await searchTavily(claimMatch[1].trim());
+      if (!results.length) return part;
+      const stripped = part.replace(/^SOURCE:.*$/gim, "").replace(/\n{3,}/g, "\n\n").trimEnd();
+      const sourceLines = results.slice(0, 2).map((r) => {
+        const snippet = (r.content ?? "").slice(0, 150).replace(/\n/g, " ").trim();
+        return `SOURCE: ${r.title} | ${r.url} | ${snippet}`;
+      }).join("\n");
+      return `${stripped}\n${sourceLines}`;
+    })
+  );
+  return enriched.join("");
+}
+
 function buildAgentPrompt(
   agentIndex: number,
   news: { title: string; description: string; body: string }
@@ -115,6 +153,12 @@ export async function POST(request: NextRequest) {
     const agentResults = await Promise.all(
       AGENTS.map((_, i) => runAgentWithRetry(i, news))
     );
+
+    // Enrich fact-checker sources with real article URLs via Tavily
+    const fcIndex = agentResults.findIndex((r) => r.agentId === "factchecker");
+    if (fcIndex !== -1) {
+      agentResults[fcIndex].text = await enrichWithTavilySources(agentResults[fcIndex].text);
+    }
 
     // Final synthesis
     const baselineNote = outletRow
