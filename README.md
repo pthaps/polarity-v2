@@ -34,7 +34,7 @@ These features are **in the codebase and work** with a valid `GEMINI_API_KEY` (s
 The following are **not** in this repository as shipped product features; details and rationale: **[`docs/MASTER_PLAN.md`](docs/MASTER_PLAN.md)** (section *Roadmap (explicitly not shipped here)*):
 
 - Multi-article trending / news feed (only **single-URL** `POST /api/fetch-news` exists).
-- URL-hash **analysis cache** in Supabase.
+- URL-hash **analysis cache** — in-memory implementation shipped in `analysisCache.ts`; Supabase-persisted cache is roadmap only.
 - **Public API key** auth, embed widget, or third-party rate limits.
 - Standalone **FastAPI** service (`backend/` is documentation-only; APIs live under `frontend/src/app/api/`).
 
