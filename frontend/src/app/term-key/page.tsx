@@ -63,7 +63,7 @@ export default function TermKeyPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <div className="min-h-screen text-[var(--text)]" style={{ background: "linear-gradient(to bottom, #dbeafe, var(--bg) 40%)" }}>
       <main className="mx-auto max-w-3xl px-6 py-10 md:px-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">Term Key</h1>
