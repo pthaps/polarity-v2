@@ -75,7 +75,7 @@ export default function TermKeyPage() {
               <h2
                 className="text-sm font-semibold mb-1"
                 style={{
-                  background: "linear-gradient(90deg, var(--accent-blue), var(--accent-red))",
+                  background: "linear-gradient(90deg, #2563EB, #B91C1C)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
