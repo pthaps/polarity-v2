@@ -351,7 +351,7 @@ export default function Home() {
               <h1 className="mb-4 font-display text-4xl font-normal leading-tight tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
                 Where does your source{" "}
                 <span style={{ background: "linear-gradient(90deg, var(--accent-blue), var(--accent-red))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>actually</span>{" "}
-                <span style={{ color: "var(--accent-red)" }}>stand?</span>
+                <span style={{ background: "linear-gradient(90deg, var(--accent-blue), var(--accent-red))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>stand?</span>
               </h1>
               <p className="mb-6 max-w-xl text-[15px] leading-relaxed text-[var(--text2)]">
                 Polarity evaluates news articles across the political spectrum using a Host and five AI panelists — each representing a distinct perspective — combined with Ad Fontes outlet data, and synthesizes reliability and left–right placement.
