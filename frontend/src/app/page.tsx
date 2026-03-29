@@ -413,7 +413,6 @@ function HomeContent() {
   const biasSliderPct = result ? horizontalToSliderPercent(horizontal) : 50;
   const cred = result?.credibilityScore ?? 0;
   const reliability64 = Math.round((cred / 100) * 64);
-  void reliability64; // used in Ad Fontes factors below
   const politicalNeutralityPct = result?.politicalNeutrality ?? Math.round(100 - (Math.abs(horizontal) / 42) * 100);
   const languageNeutralityPct = result?.languageNeutrality ?? Math.round(100 - (Math.abs(horizontal) / 42) * 100);
   const coverageBalancePct = result?.coverageBalance ?? Math.round(100 - (Math.abs(horizontal) / 42) * 100);
