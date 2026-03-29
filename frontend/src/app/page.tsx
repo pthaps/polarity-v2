@@ -389,7 +389,6 @@ export default function Home() {
           </span>
         </div>
         <div className="flex items-center gap-5">
-          <a href="#" className="text-sm text-[var(--text2)] hover:text-[var(--text)]">Ad Fontes Methodology</a>
           <span className="flex items-center gap-1.5 text-sm text-[var(--green)]">
             <span className="h-2 w-2 rounded-full bg-[var(--green)]" />
             Live
