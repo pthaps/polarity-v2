@@ -31,6 +31,7 @@ type Result = {
 
 type FactSource = { title: string; summary: string; url: string };
 type FactClaim = { claim: string; verdict: string; sources: FactSource[] };
+type AnalyzePayload = { url: string; title: string; description: string; body: string };
 
 const KNOWN_DOMAINS: Record<string, string> = {
   "reuters": "https://www.reuters.com",
@@ -277,6 +278,19 @@ function HomeContent() {
     localStorage.setItem("theme", dark ? "dark" : "light");
   }, [dark]);
 
+  const runAnalyzeRequest = useCallback(async (payload: AnalyzePayload): Promise<Result> => {
+    const analyzeRes = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const analyzeData = await analyzeRes.json();
+    if (!analyzeRes.ok) {
+      throw new Error(analyzeData.error || "Analysis failed.");
+    }
+    return analyzeData as Result;
+  }, []);
+
   const runUrlAnalysis = useCallback(
     async (urlToAnalyze: string) => {
       const trimmed = urlToAnalyze.trim();
@@ -295,27 +309,15 @@ function HomeContent() {
         });
         const fetchData = await fetchRes.json();
         if (!fetchRes.ok) {
-          setError(fetchData.error || "Failed to fetch news.");
-          setLoading(false);
-          return;
+          throw new Error(fetchData.error || "Failed to fetch news.");
         }
-        const payload = {
+        const payload: AnalyzePayload = {
           url: fetchData.url,
           title: fetchData.title,
           description: fetchData.description,
           body: fetchData.body,
         };
-        const analyzeRes = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const analyzeData = await analyzeRes.json();
-        if (!analyzeRes.ok) {
-          setError(analyzeData.error || "Analysis failed.");
-          setLoading(false);
-          return;
-        }
+        const analyzeData = await runAnalyzeRequest(payload);
         setResult(analyzeData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred.");
@@ -323,7 +325,7 @@ function HomeContent() {
         setLoading(false);
       }
     },
-    [resetFeedback]
+    [resetFeedback, runAnalyzeRequest]
   );
 
   /** Full analysis from extension: skip a second /api run */
@@ -381,23 +383,13 @@ function HomeContent() {
       }
       setLoading(true);
       try {
-        const payload = {
+        const payload: AnalyzePayload = {
           url: "paste://article",
           title: pastedTitle.trim() || "Pasted article",
           description: "",
           body,
         };
-        const analyzeRes = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const analyzeData = await analyzeRes.json();
-        if (!analyzeRes.ok) {
-          setError(analyzeData.error || "Analysis failed.");
-          setLoading(false);
-          return;
-        }
+        const analyzeData = await runAnalyzeRequest(payload);
         setResult(analyzeData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred.");
