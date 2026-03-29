@@ -30,3 +30,9 @@ yarn-error.log*
 
 # local feedback log (append-only CSV from /api/feedback)
 frontend/src/lib/feedback-log.csv
+
+# local IDE / agent tooling (do not commit)
+.agents/
+.claude/
+.cursor/
+skills-lock.json
