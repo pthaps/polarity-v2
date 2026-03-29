@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { PANEL_ORDER, AGENTS } from "@/lib/agents";
+import { useState, useEffect, useCallback } from "react";
+import { PANEL_ORDER } from "@/lib/agents";
 
 type BiasCategory5 = "Far Left" | "Lean Left" | "Center" | "Lean Right" | "Far Right";
 
@@ -310,10 +310,6 @@ function getCharacter(m: PanelMember) {
 export default function Home() {
   const [inputMode, setInputMode] = useState<"url" | "text">("url");
   const [showSources, setShowSources] = useState(false);
-  const [feedbackRating, setFeedbackRating] = useState<"up" | "down" | null>(null);
-  const [feedbackComment, setFeedbackComment] = useState("");
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-  const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [url, setUrl] = useState("");
   const [articleText, setArticleText] = useState("");
   const [pastedTitle, setPastedTitle] = useState("");
@@ -321,6 +317,19 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [dark, setDark] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState<"yes" | "no" | null>(null);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [feedbackDone, setFeedbackDone] = useState(false);
+  const [feedbackErr, setFeedbackErr] = useState<string | null>(null);
+
+  const resetFeedback = useCallback(() => {
+    setFeedbackRating(null);
+    setFeedbackComment("");
+    setFeedbackDone(false);
+    setFeedbackErr(null);
+    setFeedbackSubmitting(false);
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -336,6 +345,7 @@ export default function Home() {
     e.preventDefault();
     setError(null);
     setResult(null);
+    resetFeedback();
     setLoading(true);
     try {
       let payload: { url: string; title: string; description: string; body: string };
@@ -600,7 +610,7 @@ export default function Home() {
                 <span className="flex-1 border-t border-[var(--border)]" />
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
-                {AGENTS.map((agent) => (
+                {PANEL_ORDER.map((agent) => (
                   <div key={agent.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5" style={{ borderLeftWidth: 3, borderLeftColor: agent.color }}>
                     <div className="mb-2 flex items-center gap-2">
                       {agent.icon && <span className="text-lg">{agent.icon}</span>}
@@ -852,71 +862,114 @@ export default function Home() {
             </div>
 
             {/* Feedback */}
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-              <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Was this analysis helpful?</p>
-              {feedbackSubmitted ? (
-                <p className="text-sm text-[var(--text2)]">Thanks for your feedback.</p>
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
+              {feedbackDone ? (
+                <p className="text-center text-sm font-medium text-[var(--green)]">Thanks for your feedback.</p>
               ) : (
-                <div className="space-y-3">
-                  <div className="flex gap-2">
+                <>
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text3)]">
+                    Was this analysis helpful?
+                  </h3>
+                  <div className="flex gap-3">
                     <button
-                      onClick={() => setFeedbackRating("up")}
-                      className="flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
-                      style={{
-                        borderColor: feedbackRating === "up" ? "var(--green)" : "var(--border)",
-                        color: feedbackRating === "up" ? "var(--green)" : "var(--text2)",
-                        background: feedbackRating === "up" ? "rgba(21,128,61,0.08)" : "var(--surface2)",
+                      type="button"
+                      onClick={() => {
+                        setFeedbackRating("yes");
+                        setFeedbackErr(null);
                       }}
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                        feedbackRating === "yes"
+                          ? "border-[var(--green)] bg-[var(--surface2)] text-[var(--green)] ring-2 ring-[var(--green)] ring-offset-2 ring-offset-[var(--surface)]"
+                          : "border-[var(--border)] bg-[var(--surface2)] text-[var(--text2)] hover:border-[var(--border2)] hover:text-[var(--text)]"
+                      }`}
                     >
-                      ↑ Yes
+                      <span className="text-lg" aria-hidden>
+                        ↑
+                      </span>
+                      Yes
                     </button>
                     <button
-                      onClick={() => setFeedbackRating("down")}
-                      className="flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
-                      style={{
-                        borderColor: feedbackRating === "down" ? "var(--red-warn)" : "var(--border)",
-                        color: feedbackRating === "down" ? "var(--red-warn)" : "var(--text2)",
-                        background: feedbackRating === "down" ? "rgba(220,38,38,0.08)" : "var(--surface2)",
+                      type="button"
+                      onClick={() => {
+                        setFeedbackRating("no");
+                        setFeedbackErr(null);
                       }}
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                        feedbackRating === "no"
+                          ? "border-[var(--accent-red)] bg-[var(--surface2)] text-[var(--accent-red)] ring-2 ring-[var(--accent-red)] ring-offset-2 ring-offset-[var(--surface)]"
+                          : "border-[var(--border)] bg-[var(--surface2)] text-[var(--text2)] hover:border-[var(--border2)] hover:text-[var(--text)]"
+                      }`}
                     >
-                      ↓ No
+                      <span className="text-lg" aria-hidden>
+                        ↓
+                      </span>
+                      No
                     </button>
                   </div>
                   {feedbackRating && (
-                    <>
+                    <div className="mt-4 space-y-3">
+                      <label htmlFor="feedback-comment" className="block text-xs font-medium text-[var(--text3)]">
+                        Optional comment
+                      </label>
                       <textarea
+                        id="feedback-comment"
                         value={feedbackComment}
                         onChange={(e) => setFeedbackComment(e.target.value)}
-                        placeholder="Any comments? (optional)"
+                        placeholder="Tell us what worked or what we could improve…"
                         rows={3}
-                        className="w-full resize-none rounded-lg border border-[var(--border)] bg-[var(--surface2)] px-3 py-2.5 text-[13px] text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--border2)] focus:outline-none"
+                        disabled={feedbackSubmitting}
+                        className="w-full resize-y rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-sm text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--border2)] focus:outline-none focus:ring-2 focus:ring-[var(--border)] disabled:opacity-60"
                       />
                       <button
-                        disabled={feedbackLoading}
+                        type="button"
+                        disabled={feedbackSubmitting}
                         onClick={async () => {
-                          setFeedbackLoading(true);
-                          await fetch("/api/feedback", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ url: result.url, title: result.title, rating: feedbackRating, comment: feedbackComment }),
-                          });
-                          setFeedbackLoading(false);
-                          setFeedbackSubmitted(true);
+                          if (!feedbackRating || !result) return;
+                          setFeedbackSubmitting(true);
+                          setFeedbackErr(null);
+                          try {
+                            const res = await fetch("/api/feedback", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                url: result.url,
+                                title: result.title,
+                                rating: feedbackRating,
+                                comment: feedbackComment.trim() || undefined,
+                              }),
+                            });
+                            const data = (await res.json()) as { error?: string };
+                            if (!res.ok) {
+                              throw new Error(data.error || "Failed to submit feedback.");
+                            }
+                            setFeedbackDone(true);
+                          } catch (e) {
+                            setFeedbackErr(e instanceof Error ? e.message : "Failed to submit feedback.");
+                          } finally {
+                            setFeedbackSubmitting(false);
+                          }
                         }}
-                        className="rounded-lg bg-[var(--accent-blue)] px-5 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                        className="w-full rounded-xl bg-[var(--accent-blue)] px-4 py-2.5 text-sm font-bold text-white shadow hover:opacity-90 disabled:opacity-50"
                       >
-                        {feedbackLoading ? "Submitting…" : "Submit"}
+                        {feedbackSubmitting ? "Submitting…" : "Submit feedback"}
                       </button>
-                    </>
+                    </div>
                   )}
-                </div>
+                  {feedbackErr && (
+                    <p className="mt-3 text-sm text-[var(--red-warn)]">{feedbackErr}</p>
+                  )}
+                </>
               )}
             </div>
 
             {/* Analyze another */}
             <div className="flex justify-center pt-2 pb-6">
               <button
-                onClick={() => { setResult(null); setShowSources(false); setFeedbackRating(null); setFeedbackComment(""); setFeedbackSubmitted(false); }}
+                onClick={() => {
+                  setResult(null);
+                  setShowSources(false);
+                  resetFeedback();
+                }}
                 className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-6 py-2.5 text-sm font-medium text-[var(--text2)] shadow-sm hover:bg-[var(--surface2)] hover:text-[var(--text)]"
               >
                 ← Analyze another article
