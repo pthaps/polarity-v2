@@ -27,8 +27,8 @@ function parseFactClaims(text: string): FactClaim[] {
   const claims: FactClaim[] = [];
   const blocks = text.split(/(?=CLAIM:)/i).filter((b) => /CLAIM:/i.test(b));
   for (const block of blocks) {
-    const claim = block.match(/CLAIM:\s*(.+?)(?=\nVERDICT:|$)/is)?.[1]?.trim() ?? "";
-    const verdict = block.match(/VERDICT:\s*(.+?)(?=\nSOURCE:|\nCLAIM:|$)/is)?.[1]?.trim() ?? "";
+    const claim = block.match(/CLAIM:\s*([\s\S]+?)(?=\nVERDICT:|$)/i)?.[1]?.trim() ?? "";
+    const verdict = block.match(/VERDICT:\s*([\s\S]+?)(?=\nSOURCE:|\nCLAIM:|$)/i)?.[1]?.trim() ?? "";
     const sourceLines = [...block.matchAll(/^SOURCE:\s*(.+)$/gim)];
     const sources: FactSource[] = sourceLines.map((m) => {
       const [rawTitle, ...rest] = m[1].split("|");
