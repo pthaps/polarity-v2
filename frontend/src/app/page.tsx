@@ -511,14 +511,7 @@ export default function Home() {
               <p className="mb-6 max-w-xl text-[15px] leading-relaxed text-[var(--text2)]">
                 Polarity evaluates news articles across the political spectrum using a Host and five AI panelists — each representing a distinct perspective — combined with Ad Fontes outlet data, and synthesizes reliability and left–right placement.
               </p>
-              <div className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-[var(--border)] bg-[var(--surface2)] px-4 py-2.5 text-sm text-[var(--text2)]">
-                <span>Far Left</span><span className="text-[var(--text3)]">·</span>
-                <span>Lean Left</span><span className="text-[var(--text3)]">·</span>
-                <span>Center</span><span className="text-[var(--text3)]">·</span>
-                <span>Lean Right</span><span className="text-[var(--text3)]">·</span>
-                <span>Far Right</span><span className="text-[var(--text3)]">·</span>
-                <span>Multi-Agent Analysis</span>
-              </div>
+
             </div>
 
 
