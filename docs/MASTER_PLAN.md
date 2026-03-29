@@ -92,7 +92,7 @@ Trust in media is fragile: readers struggle to tell reliable reporting from spin
 
 ### Data schema (response highlights)
 
-`credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `replies[]` (per agent: text, summary, score, keywords), `outletBaseline`, `finalSummary`, **`persistedAnalysis`** (boolean — whether the run was stored in Supabase when configured; insert failures are logged server-side).
+`credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `replies[]` (per agent: text, summary, score, keywords), `outletBaseline`, `finalSummary`, **`persistedAnalysis`** (boolean — whether the run was stored in Supabase when configured; insert failures are logged server-side), **`pipelineTimingMs`** (`parallelAgentsMs`, `synthesisAndTavilyMs`, `totalMs` — wall-clock milliseconds for observability and debugging; not used for scoring).
 
 ### Supabase
 

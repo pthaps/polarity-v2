@@ -46,6 +46,7 @@ Prefer **small, focused commits** so history stays easy to review (and aligns wi
 
 - **One logical change per commit** — e.g. separate `docs:` from `feat:` or `fix:` when unrelated.
 - **Split docs and code** when you touch both but the edits are independent (two commits).
+- **Push multiple commits per session** when you ship several steps in a row — frequent small pushes tend to read better in velocity metrics than one large batch.
 - Use a short **prefix** when helpful: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`.
 
 ---
@@ -230,7 +231,7 @@ curl -X POST https://your-deployment.vercel.app/api/analyze \
   }'
 ```
 
-Response includes: `credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `finalSummary`, `replies[]`, `outletBaseline`, `persistedAnalysis` (whether the row was saved to Supabase when configured).
+Response includes: `credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `finalSummary`, `replies[]`, `outletBaseline`, `persistedAnalysis` (whether the row was saved to Supabase when configured), `pipelineTimingMs` (parallel agents vs synthesis+Tavily vs total — for debugging, not scoring).
 
 ---
 
