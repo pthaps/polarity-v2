@@ -566,6 +566,32 @@ export default function Home() {
                 </button>
               </div>
             </form>
+
+            {/* Agent info section */}
+            <div className="mt-10">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="text-xs font-medium uppercase tracking-widest text-[var(--text3)]">Meet the analysts</span>
+                <span className="flex-1 border-t border-[var(--border)]" />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {AGENTS.map((agent) => (
+                  <div key={agent.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5" style={{ borderLeftWidth: 3, borderLeftColor: agent.color }}>
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="text-lg">{agent.icon}</span>
+                      <div>
+                        <p className="text-sm font-bold" style={{ color: agent.color }}>{agent.name}</p>
+                        <p className="text-[11px] text-[var(--text3)]">{agent.characterTagline}</p>
+                      </div>
+                    </div>
+                    <p className="text-[13px] leading-relaxed text-[var(--text2)]">
+                      {agent.id === "bias" && "Scans the article for loaded language, selective framing, and emotionally manipulative wording — with specific examples pulled directly from the text."}
+                      {agent.id === "factchecker" && "Extracts 3–5 specific claims (stats, quotes, events) and assesses whether each is well-sourced, unverified, or disputed, with linked sources."}
+                      {agent.id === "synthesizer" && "Weighs everything together for a balanced final verdict — what the article does well, where it falls short, and an overall reliability score."}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </>
         ) : (
           /* Results - Image 2 Ad Fontes dashboard */
