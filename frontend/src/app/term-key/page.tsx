@@ -63,7 +63,7 @@ export default function TermKeyPage() {
   ];
 
   return (
-    <div className="min-h-screen text-[var(--text)]" style={{ background: "linear-gradient(to bottom, #dbeafe, var(--bg) 40%)" }}>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <main className="mx-auto max-w-3xl px-6 py-10 md:px-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">Term Key</h1>
@@ -72,7 +72,17 @@ export default function TermKeyPage() {
         <div className="space-y-3">
           {terms.map((t) => (
             <div key={t.term} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
-              <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--accent-blue)" }}>{t.term}</h2>
+              <h2
+                className="text-sm font-semibold mb-1"
+                style={{
+                  background: "linear-gradient(90deg, var(--accent-blue), var(--accent-red))",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                {t.term}
+              </h2>
               <p className="text-sm text-[var(--text2)] leading-relaxed">{t.definition}</p>
             </div>
           ))}
