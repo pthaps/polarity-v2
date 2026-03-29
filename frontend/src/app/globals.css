@@ -40,6 +40,17 @@
   --muted: var(--text3);
 }
 
+[data-theme="dark"] {
+  --bg: #0F0E0B;
+  --surface: #1A1916;
+  --surface2: #232118;
+  --border: #2E2C26;
+  --border2: #3A3830;
+  --text: #F0EEE8;
+  --text2: #9A9688;
+  --text3: #5A5850;
+}
+
 *,
 *::before,
 *::after {

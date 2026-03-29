@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PANEL_ORDER } from "@/lib/agents";
 
 type BiasCategory5 = "Far Left" | "Lean Left" | "Center" | "Lean Right" | "Far Right";
@@ -25,7 +25,7 @@ function PanelReplyCard({ reply }: { reply: Reply }) {
   const score = reply.score;
   return (
     <div
-      className="overflow-hidden rounded-xl border bg-white shadow-sm"
+      className="overflow-hidden rounded-xl border bg-[var(--surface)] shadow-sm"
       style={{ borderColor: reply.color, borderLeftWidth: 4 }}
     >
       <button
@@ -162,6 +162,17 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") setDark(true);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -255,6 +266,13 @@ export default function Home() {
             <span className="h-2 w-2 rounded-full bg-[var(--green)]" />
             Live
           </span>
+          <button
+            onClick={() => setDark((d) => !d)}
+            className="rounded-lg border border-[var(--border)] bg-[var(--surface2)] p-1.5 text-[var(--text2)] hover:text-[var(--text)] transition-colors"
+            aria-label="Toggle dark mode"
+          >
+            {dark ? "☀" : "☾"}
+          </button>
         </div>
       </header>
 
