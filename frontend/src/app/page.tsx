@@ -21,6 +21,12 @@ type Result = {
   languageNeutrality?: number | null;
   coverageBalance?: number | null;
   outletBaseline?: { name: string; verticalRank: number; horizontalRank: number } | null;
+  persistedAnalysis?: boolean;
+  pipelineTimingMs?: {
+    parallelAgentsMs: number;
+    synthesisAndTavilyMs: number;
+    totalMs: number;
+  };
 };
 
 type FactSource = { title: string; summary: string; url: string };
@@ -782,6 +788,22 @@ function HomeContent() {
               <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-[var(--text)]">
                 {result.finalSummary || "No summary available."}
               </p>
+              {(result.pipelineTimingMs || result.persistedAnalysis !== undefined) && (
+                <p className="mt-4 border-t border-[var(--border)] pt-3 text-[10px] leading-relaxed text-[var(--text3)]">
+                  {result.pipelineTimingMs && (
+                    <>
+                      Agents {result.pipelineTimingMs.parallelAgentsMs}ms · synthesis + Tavily{" "}
+                      {result.pipelineTimingMs.synthesisAndTavilyMs}ms · total {result.pipelineTimingMs.totalMs}ms
+                    </>
+                  )}
+                  {result.pipelineTimingMs && result.persistedAnalysis !== undefined && " · "}
+                  {result.persistedAnalysis !== undefined && (
+                    <span title="Whether this run was stored in Supabase analyses">
+                      Saved to DB: {result.persistedAnalysis ? "yes" : "no"}
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
             <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-4">
               {result.url.startsWith("paste://") ? (
