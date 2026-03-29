@@ -14,7 +14,7 @@ Paste any news URL or article text → get a bias placement on a five-point poli
 - **Fact-Checker** — extracts 3-5 specific claims. Each gets a verdict (Supported / Unverified / Disputed) with real source URLs via Tavily Search.
 - **Synthesizer** — balanced overall reliability and bias assessment.
 - **Final synthesis** — blends all three agents + Ad Fontes outlet baseline into a single credibility score, horizontal bias estimate, and plain-English summary.
-- **Chrome Extension** — one-click analysis of any open news page.
+- **Chrome Extension** — calls the same pipeline as the web app (`/api/fetch-news` → `/api/analyze`).
 - **Traction Analytics** — live dashboard of usage metrics from Supabase.
 - **Feedback system** — thumbs up/down + comment, persisted to Supabase with CSV fallback.
 - **Dark mode** — full theme support persisted via localStorage.
@@ -60,8 +60,8 @@ User Input (URL or text)
 | Layer | Technology |
 |-------|------------|
 | Frontend | Next.js 14 (App Router), React 18, Tailwind CSS, TypeScript |
-| API | Next.js API Routes — /api/analyze, /api/feedback, /api/traction, /api/extension-analyze |
-| AI | Google Gemini (gemini-1.5-flash) — 3 parallel agents + 1 synthesis |
+| API | Next.js API Routes — `/api/analyze`, `/api/fetch-news`, `/api/feedback`, `GET /api/traction`; optional `/api/extension-analyze` (lightweight single-call) |
+| AI | Google Gemini — default **`gemini-2.5-flash`** (`GEMINI_MODEL` override); 3 parallel agents + 1 synthesis pass |
 | Web Search | Tavily Search API — real-time source enrichment for fact-checker claims |
 | Outlet Baseline | Ad Fontes Media CSV — 50+ outlets with reliability (0-64) and bias (-42 to +42) scores |
 | Database | Supabase (Postgres) — analyses + feedback tables with RLS |
@@ -85,7 +85,7 @@ polarity-v2/
 │   │   │       ├── feedback/route.ts      # User feedback (Supabase + CSV)
 │   │   │       ├── traction/route.ts      # Usage analytics from Supabase
 │   │   │       ├── fetch-news/route.ts    # Article scraper (Cheerio)
-│   │   │       └── extension-analyze/    # Fast single-call for Chrome extension
+│   │   │       └── extension-analyze/     # Optional lightweight Gemini-only path (extension uses fetch-news + analyze)
 │   │   ├── components/
 │   │   │   └── Navbar.tsx             # Sticky nav with dark mode toggle
 │   │   ├── lib/
@@ -137,8 +137,8 @@ TAVILY_API_KEY=your_tavily_api_key        # https://tavily.com
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your_supabase_anon_key
 
-# Optional — override default AI model
-GEMINI_MODEL=gemini-1.5-flash
+# Optional — override default AI model (default in code: gemini-2.5-flash)
+# GEMINI_MODEL=gemini-2.5-flash-lite
 ```
 
 The app works without Tavily and Supabase — they degrade gracefully. Only `GEMINI_API_KEY` is required.

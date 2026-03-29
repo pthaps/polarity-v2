@@ -25,4 +25,8 @@ npm run build                # production build
 | `src/lib/gemini.ts` | Gemini client with retry + rate limit handling |
 | `src/lib/adFontesCsv.ts` | Ad Fontes CSV parser + 55/45 blending formula |
 | `src/lib/feedbackCsv.ts` | CSV fallback for feedback persistence |
+| `src/lib/apiErrors.ts` | Shared JSON error helpers + logging for API routes |
+| `src/lib/gemini.ts` | Gemini client — default model `gemini-2.5-flash`, retries + fallbacks |
 | `supabase-migration.sql` | SQL to create analyses + feedback tables with RLS |
+
+**Chrome extension** (repo `extension/`) uses `POST /api/fetch-news` then `POST /api/analyze`, matching the web UI. `/api/extension-analyze` is an optional lighter endpoint for tools that only need scores.

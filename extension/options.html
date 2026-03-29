@@ -13,7 +13,7 @@
   </head>
   <body>
     <h1>Polarity AI</h1>
-    <p>Base URL of your Polarity web app (no trailing slash). The extension calls <code>/api/extension-analyze</code>.</p>
+    <p>Base URL of your Polarity web app (no trailing slash). The extension calls <code>/api/fetch-news</code> then <code>/api/analyze</code> (same full pipeline as the website). Optional lightweight route: <code>/api/extension-analyze</code>.</p>
     <label for="apiBaseUrl">API base URL</label>
     <input id="apiBaseUrl" type="url" placeholder="https://your-app.vercel.app" />
     <button id="save">Save</button>

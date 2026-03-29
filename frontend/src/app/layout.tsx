@@ -4,7 +4,8 @@ import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Polarity — Real-Time Media Bias Analysis",
-  description: "Where does your source actually stand? Polarity evaluates news across the political spectrum using 8 AI panelists and synthesizes a bias score.",
+  description:
+    "Where does your source actually stand? Polarity runs three parallel AI analysts plus a synthesis step, blends with Ad Fontes outlet data, and scores bias and credibility.",
 };
 
 export default function RootLayout({

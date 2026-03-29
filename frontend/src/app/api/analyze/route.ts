@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/readJsonBody";
+import { jsonError, logRouteError } from "@/lib/apiErrors";
 import { AGENTS } from "@/lib/agents";
 import { supabase } from "@/lib/supabase";
 import { generateGeminiText } from "@/lib/gemini";
@@ -159,10 +160,10 @@ export async function POST(request: NextRequest) {
     const { url, title, description, body: newsBody } = parsed.data;
 
     if (!newsBody?.trim()) {
-      return NextResponse.json({ error: "Article body is required" }, { status: 400 });
+      return jsonError("Article body is required", 400, { code: "BAD_REQUEST" });
     }
     if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: "GEMINI_API_KEY is not set" }, { status: 500 });
+      return jsonError("GEMINI_API_KEY is not set", 500, { code: "NO_GEMINI_KEY" });
     }
 
     const articleUrl = (url && url.trim()) || "paste://article";
@@ -257,7 +258,7 @@ FINAL_SUMMARY: (2-3 sentences)`;
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
-    console.error("analyze error", e);
-    return NextResponse.json({ error: `Analysis failed: ${message}` }, { status: 500 });
+    logRouteError("analyze", e);
+    return jsonError(`Analysis failed: ${message}`, 500, { code: "ANALYZE_ERROR" });
   }
 }
