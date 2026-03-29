@@ -1,23 +1,28 @@
-# Polarity — frontend (Next.js 14)
+# Polarity AI — Frontend
 
-Next.js App Router app: **URL or pasted text** → `POST /api/fetch-news` (scrapes **one** URL) → `POST /api/analyze` → dashboard (bias spectrum, credibility, agent cards, claims, summary).
+Next.js 14 app containing the full product: UI, API routes, AI pipeline, and data layer.
 
-**Also exposes:** `POST /api/feedback`, `GET /api/traction`, `POST /api/extension-analyze` (lighter Gemini-only path). **Traction UI:** `/traction-analytics`.
+See the [root README](../README.md) for full documentation, architecture, and setup instructions.
 
-Do **not** describe a multi-article “news discovery feed” unless it is implemented — `fetch-news` is single-URL extraction only (see root [`docs/MASTER_PLAN.md`](../docs/MASTER_PLAN.md) Roadmap).
-
-**Extension handoff:** When opened from the Chrome extension, the app may read **`sessionStorage.polarity-hydrate`** (JSON from a completed analyze) to show the full result **without calling analyze again** — see root [`docs/MASTER_PLAN.md`](../docs/MASTER_PLAN.md).
-
-## Commands
-
-From **repo root:** `npm run dev` (if wired) or:
+## Quick start
 
 ```bash
-cd frontend
 npm install --legacy-peer-deps
-npm run dev
+cp .env.example .env.local   # add GEMINI_API_KEY (required)
+npm run dev                  # http://localhost:3000
+npm run build                # production build
 ```
 
-**Deploy:** Vercel **Root Directory** = `frontend`.
+## Key files
 
-**Env:** Copy `.env.example` → `.env.local`. `GEMINI_API_KEY` is required for analysis.
+| File | Purpose |
+|------|---------|
+| `src/app/page.tsx` | Main UI — landing page + results dashboard |
+| `src/app/api/analyze/route.ts` | Core 3-agent parallel analysis pipeline |
+| `src/app/api/feedback/route.ts` | User feedback — Supabase + CSV fallback |
+| `src/app/api/traction/route.ts` | Live usage analytics |
+| `src/lib/agents.ts` | Agent system prompts (Bias, Fact-Check, Synthesizer) |
+| `src/lib/gemini.ts` | Gemini client with retry + rate limit handling |
+| `src/lib/adFontesCsv.ts` | Ad Fontes CSV parser + 55/45 blending formula |
+| `src/lib/feedbackCsv.ts` | CSV fallback for feedback persistence |
+| `supabase-migration.sql` | SQL to create analyses + feedback tables with RLS |
