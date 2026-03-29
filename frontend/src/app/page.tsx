@@ -375,6 +375,8 @@ export default function Home() {
   void reliability64; // used in Ad Fontes factors below
   const neutralityPct = Math.round(100 - Math.min(100, (Math.abs(horizontal) / 42) * 40));
   const factualPct = Math.round(cred * 0.85);
+  const factualLabel = factualPct >= 75 ? "Reporting" : factualPct >= 50 ? "Mostly Reporting" : factualPct >= 35 ? "Mixed" : factualPct >= 15 ? "Mostly Opinion" : "Opinion";
+  const factualColor = factualPct >= 75 ? "var(--green)" : factualPct >= 50 ? "var(--green-light)" : factualPct >= 35 ? "var(--orange)" : "var(--red-warn)";
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]" style={{ fontFamily: "var(--font-body)" }}>
@@ -678,12 +680,12 @@ export default function Home() {
                   pct: biasSliderPct,
                 },
                 { title: "Neutrality Index", score: `${neutralityPct}%`, desc: "Balanced", color: "var(--green-light)", pct: neutralityPct },
-                { title: "Factual Expression", score: `${factualPct}%`, desc: "Reporting vs opinion", color: "var(--green-light)", pct: factualPct },
+                { title: "Factual Expression", score: factualLabel, desc: "Reporting vs opinion", color: factualColor, pct: factualPct },
               ].map((card) => (
                 <div key={card.title} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
                   <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">{card.title}</div>
                   <div
-                    className={`font-bold ${card.title === "Bias placement" ? "text-xl leading-tight sm:text-2xl" : "text-2xl"}`}
+                    className={`font-bold ${card.title === "Bias placement" || card.title === "Factual Expression" ? "text-xl leading-tight sm:text-2xl" : "text-2xl"}`}
                     style={{ color: card.color }}
                   >
                     {card.score}
