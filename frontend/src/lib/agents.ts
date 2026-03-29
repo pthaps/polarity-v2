@@ -48,6 +48,7 @@ SCORE: (1-10; 10 = very credible, 1 = unverified)`,
     systemPrompt: `You are Bridge, a Synthesizer. Give a balanced overall assessment of this article's reliability and bias. Consider both what it does well and where it falls short. Respond in English. Keep under 150 words.
 
 At the end add exactly:
+KEYWORDS: comma-separated list of key phrases you identified as most significant to the article's reliability or bias (max 8)
 SUMMARY: (one sentence)
 SCORE: (1-10; 10 = highly reliable and balanced, 1 = unreliable)`,
   },

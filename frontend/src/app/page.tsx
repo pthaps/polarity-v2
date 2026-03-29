@@ -119,6 +119,7 @@ function PanelReplyCard({ reply }: { reply: Reply }) {
   const score = reply.score;
   const isFactChecker = reply.agentId === "factchecker";
   const isBias = reply.agentId === "bias";
+  const isSynthesizer = reply.agentId === "synthesizer";
   const claims = isFactChecker ? parseFactClaims(reply.text) : [];
   const keywords = reply.keywords ?? [];
 
@@ -187,14 +188,14 @@ function PanelReplyCard({ reply }: { reply: Reply }) {
                 );
               })}
             </div>
-          ) : isBias && keywords.length > 0 ? (
+          ) : (isBias || isSynthesizer) && keywords.length > 0 ? (
             <div>
               <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-[var(--text)]">{highlightKeywords(reply.text, keywords)}</p>
               <div className="mt-4 border-t border-[var(--border)] pt-3">
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Flagged language</p>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">{isBias ? "Flagged language" : "Key phrases"}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {keywords.map((kw, i) => (
-                    <span key={i} className="rounded-full px-2.5 py-0.5 text-[11px] font-medium" style={{ background: "rgba(180,83,9,0.12)", color: "var(--bias)" }}>
+                    <span key={i} className="rounded-full px-2.5 py-0.5 text-[11px] font-medium" style={{ background: `color-mix(in srgb, ${reply.color} 12%, transparent)`, color: reply.color }}>
                       {kw}
                     </span>
                   ))}
