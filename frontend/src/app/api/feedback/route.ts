@@ -1,18 +1,14 @@
 import { NextResponse } from "next/server";
 import { appendFeedbackCsv } from "@/lib/feedbackCsv";
 import { supabase } from "@/lib/supabase";
+import { readJsonBody } from "@/lib/readJsonBody";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  const o = body as Record<string, unknown>;
+  const parsed = await readJsonBody<Record<string, unknown>>(request);
+  if (!parsed.ok) return parsed.response;
+  const o = parsed.data;
   const rating = o.rating;
   if (rating !== "yes" && rating !== "no") {
     return NextResponse.json(

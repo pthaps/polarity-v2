@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readJsonBody } from "@/lib/readJsonBody";
 import { AGENTS } from "@/lib/agents";
 import { supabase } from "@/lib/supabase";
 import { generateGeminiText } from "@/lib/gemini";
@@ -148,13 +149,14 @@ async function runAgentWithRetry(index: number, news: { title: string; descripti
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as {
+    const parsed = await readJsonBody<{
       url: string;
       title: string;
       description: string;
       body: string;
-    };
-    const { url, title, description, body: newsBody } = body;
+    }>(request);
+    if (!parsed.ok) return parsed.response;
+    const { url, title, description, body: newsBody } = parsed.data;
 
     if (!newsBody?.trim()) {
       return NextResponse.json({ error: "Article body is required" }, { status: 400 });

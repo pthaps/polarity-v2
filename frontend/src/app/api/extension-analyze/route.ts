@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readJsonBody } from "@/lib/readJsonBody";
 import { extractArticleFromUrl } from "@/lib/fetchArticleHtml";
 import { generateGeminiText } from "@/lib/gemini";
 import {
@@ -59,15 +60,12 @@ function parseExtensionResponse(text: string): {
 }
 
 export async function POST(request: NextRequest) {
-  let body: { url?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON body. Send { \"url\": \"https://...\" }" },
-      { status: 400, headers: corsHeaders }
-    );
-  }
+  const parsed = await readJsonBody<{ url?: string }>(request, {
+    invalidJsonHeaders: corsHeaders,
+    invalidJsonMessage: 'Invalid JSON body. Send { "url": "https://..." }',
+  });
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.data;
 
   try {
     const url = body.url?.trim();

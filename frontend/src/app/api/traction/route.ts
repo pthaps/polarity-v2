@@ -14,6 +14,10 @@ export async function GET() {
     supabase.from("analyses").select("url, title, created_at").order("created_at", { ascending: false }).limit(5),
   ]);
 
+  if (analysesRes.error) console.error("[traction] analyses count", analysesRes.error);
+  if (feedbackRes.error) console.error("[traction] feedback", feedbackRes.error);
+  if (recentRes.error) console.error("[traction] recent analyses", recentRes.error);
+
   const totalAnalyses = analysesRes.count ?? 0;
   const feedbackRows = feedbackRes.data ?? [];
   const totalFeedback = feedbackRes.count ?? feedbackRows.length;

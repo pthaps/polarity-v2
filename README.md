@@ -8,15 +8,26 @@ Upstream layout: **[pthaps/polarity-v2](https://github.com/pthaps/polarity-v2)**
 
 ---
 
-## What’s in the box
+## What’s in the box (this repo)
 
 | Area | Description |
 |------|-------------|
-| **Web app** | Next.js 14 UI + API routes: analyze, fetch-news, feedback, traction, extension-analyze |
+| **Web app** | Next.js 14 UI + API routes: `analyze`, `fetch-news`, `feedback`, `traction`, `extension-analyze` |
 | **Analysis** | 3 Gemini agents in parallel (bias, fact-check, synthesizer) → 1 synthesis pass for scores + summary; **55% AI / 45% Ad Fontes** blend (`adFontesCsv.ts`) |
 | **Enrichment** | Tavily Search (optional) to attach real URLs to fact-check sources |
 | **Data** | Ad Fontes–style CSV under `frontend/src/data/`; optional Supabase for analyses + feedback |
-| **Extension** | Chrome MV3: full `fetch-news` → `analyze` once; compact popup; **full report** opens the site with cached result (no duplicate analyze) |
+| **Analytics** | [`/traction-analytics`](frontend/src/app/traction-analytics/page.tsx) page + `GET /api/traction` (requires Supabase) |
+| **Extension** | Chrome MV3: full `fetch-news` → `analyze` once; compact popup; **full report** hydrates the web app via `sessionStorage` (no second analyze) |
+
+### Not implemented here (roadmap / don’t claim in submissions)
+
+| Claim | Reality |
+|-------|--------|
+| Standalone **FastAPI** in `backend/` | **`backend/`** is a placeholder — APIs live in **Next.js** only. |
+| **Trending news feed** / Tavily News–style discovery UI | **No** — `POST /api/fetch-news` scrapes **one URL** you send; there is no pre-built feed of headlines. |
+| Edge-cached feed / URL-hash **cache** in DB | **Not** in code (future scalability only). |
+
+See [`docs/MASTER_PLAN.md`](docs/MASTER_PLAN.md) **Roadmap** section for the canonical list.
 
 ---
 

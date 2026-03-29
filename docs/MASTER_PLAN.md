@@ -164,6 +164,19 @@ Target outcome: collapse **many minutes** of manual cross-checking into **one fl
 
 ---
 
+## Roadmap (explicitly not shipped here)
+
+These items are **out of scope for the current codebase** or exist only as notes — do **not** assume they are deployed:
+
+| Item | Status in repo |
+|------|------------------|
+| Standalone **`backend/`** FastAPI service | **`backend/`** contains `README.md` only; APIs are **Next.js Route Handlers** under `frontend/src/app/api/`. |
+| **Trending news / multi-article feed** (Tavily News–style cards) | **Not implemented.** `POST /api/fetch-news` takes **one** `url` and returns scraped title/description/body for that page. |
+| **URL-hash analysis cache** in Supabase / Edge Config feed TTL | **Not implemented** (documented as future scalability). |
+| **Public API key auth** / embed widget | **Roadmap**; `POST /api/analyze` is open to same-origin / server callers per deployment CORS. |
+
+---
+
 ## Integrity
 
-This plan describes the **intended and implemented** system. Where the UI copy still says “seven experts,” the **code** uses **three parallel panel agents** plus a **fourth synthesis** pass — see `frontend/src/lib/agents.ts` and `/api/analyze`.
+This plan tracks **what is in the repository** for hackathon scoring. The **code** uses **three parallel panel agents** plus a **fourth synthesis** pass — see `frontend/src/lib/agents.ts` and `frontend/src/app/api/analyze/route.ts`. **`POST /api/fetch-news` is single-URL article extraction**, not a feed aggregator.
