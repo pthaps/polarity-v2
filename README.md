@@ -231,7 +231,7 @@ curl -X POST https://your-deployment.vercel.app/api/analyze \
   }'
 ```
 
-Response includes: `credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `finalSummary`, `replies[]`, `outletBaseline`, `persistedAnalysis` (whether the row was saved to Supabase when configured), `pipelineTimingMs` (parallel agents vs synthesis+Tavily vs total — for debugging, not scoring).
+Response includes: `credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `finalSummary`, `replies[]`, `outletBaseline`, `persistedAnalysis` (whether the row was saved to Supabase when configured), `pipelineTimingMs` (parallel agents vs synthesis+Tavily vs total — for debugging, not scoring). The web app shows `pipelineTimingMs` and `persistedAnalysis` in small type under the Summary card.
 
 ---
 
