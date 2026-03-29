@@ -38,6 +38,15 @@
   --fact: #2563EB;
   --synthesizer: #60a5fa;
   --muted: var(--text3);
+  /* Traction Analytics — soft fills (light) */
+  --traction-track: #ece9e3;
+  --traction-soft-red: #fdf1f2;
+  --traction-soft-red-border: #f0c4c8;
+  --traction-soft-blue: #eef1fb;
+  --traction-soft-blue-border: #c0cdf0;
+  --traction-soft-slate: #eef3fb;
+  --traction-soft-gray: #f3f3f3;
+  --traction-soft-orange: #fdf3f1;
 }
 
 [data-theme="dark"] {
@@ -48,7 +57,15 @@
   --border2: #3A3830;
   --text: #F0EEE8;
   --text2: #9A9688;
-  --text3: #5A5850;
+  --text3: #6B675C;
+  --traction-track: #2e2c26;
+  --traction-soft-red: #2a1a1c;
+  --traction-soft-red-border: #5c2a32;
+  --traction-soft-blue: #1a2233;
+  --traction-soft-blue-border: #2a3a55;
+  --traction-soft-slate: #1a2228;
+  --traction-soft-gray: #252520;
+  --traction-soft-orange: #2a2218;
 }
 
 *,
