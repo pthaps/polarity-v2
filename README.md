@@ -90,13 +90,8 @@ User Input (URL or text)
 | Layer | Technology |
 |-------|------------|
 | Frontend | Next.js 14 (App Router), React 18, Tailwind CSS, TypeScript |
-<<<<<<< HEAD
 | API | Next.js API Routes — `/api/analyze`, `/api/fetch-news`, `/api/feedback`, `GET /api/traction`; optional `/api/extension-analyze` (lightweight single-call) |
 | AI | Google Gemini — default **`gemini-2.5-flash`** (`GEMINI_MODEL` override); 3 parallel agents + 1 synthesis pass |
-=======
-| API | Next.js API Routes — /api/analyze, /api/feedback, /api/traction, /api/extension-analyze |
-| AI | Google Gemini (gemini-2.5-flash) — 3 parallel agents + 1 synthesis |
->>>>>>> d569e86 (docs: clean up API reference section)
 | Web Search | Tavily Search API — real-time source enrichment for fact-checker claims |
 | Outlet Baseline | Ad Fontes Media CSV — 50+ outlets with reliability (0-64) and bias (-42 to +42) scores |
 | Database | Supabase (Postgres) — analyses + feedback tables with RLS |
@@ -174,13 +169,8 @@ TAVILY_API_KEY=your_tavily_api_key        # https://tavily.com
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your_supabase_anon_key
 
-<<<<<<< HEAD
 # Optional — override default AI model (default in code: gemini-2.5-flash)
 # GEMINI_MODEL=gemini-2.5-flash-lite
-=======
-# Optional — override default AI model
-GEMINI_MODEL=gemini-2.5-flash
->>>>>>> d569e86 (docs: clean up API reference section)
 ```
 
 The app works without Tavily and Supabase — they degrade gracefully. Only `GEMINI_API_KEY` is required.

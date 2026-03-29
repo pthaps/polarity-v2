@@ -9,15 +9,6 @@ const C = {
   slate: "#4a72c4",
   gray: "#7a7a7a",
   orange: "#c4503a",
-<<<<<<< Updated upstream
-=======
-  border: "var(--border)",
-  surface: "var(--surface)",
-  text: "var(--text)",
-  text2: "var(--text2)",
-  text3: "var(--text3)",
-  bg: "var(--bg)",
->>>>>>> Stashed changes
 };
 
 const SEM = {
@@ -70,11 +61,7 @@ function ProgressBar({ label, pct, color }: { label: string; pct: number; color:
         <span style={{ fontSize: 12, color: SEM.text2, fontWeight: 500 }}>{label}</span>
         <span style={{ fontFamily: MONO, fontSize: 11, color }}>{pct}%</span>
       </div>
-<<<<<<< Updated upstream
       <div style={{ height: 6, background: SEM.track, borderRadius: 999, overflow: "hidden" }}>
-=======
-      <div style={{ height: 6, background: "var(--surface2)", borderRadius: 999, overflow: "hidden" }}>
->>>>>>> Stashed changes
         <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 999 }} />
       </div>
     </div>
@@ -88,11 +75,7 @@ function BarItem({ label, pct, color }: { label: string; pct: number; color: str
         <span style={{ fontSize: 11, color: SEM.text2 }}>{label}</span>
         <span style={{ fontFamily: MONO, fontSize: 11, color: SEM.text3 }}>{pct}%</span>
       </div>
-<<<<<<< Updated upstream
       <div style={{ height: 5, background: SEM.track, borderRadius: 999, overflow: "hidden" }}>
-=======
-      <div style={{ height: 5, background: "var(--surface2)", borderRadius: 999, overflow: "hidden" }}>
->>>>>>> Stashed changes
         <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 999 }} />
       </div>
     </div>
@@ -151,19 +134,11 @@ export default function TractionAnalyticsPage() {
         {/* HERO KPI STRIP */}
         <SectionLabel>Key Metrics</SectionLabel>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 36 }}>
-<<<<<<< Updated upstream
           <KpiCard color={C.crimson} badge="↑ Day 1" badgeBg="var(--traction-soft-red)" badgeColor={C.crimson} number="69" numberColor={C.crimson} label="Followers" sub="+18.9% since launch" />
           <KpiCard color={C.navy} badge="Social" badgeBg="var(--traction-soft-blue)" badgeColor={C.navy} number="5.2k" numberColor={C.navy} label="Impressions" sub="Total impressions to date" />
           <KpiCard color={C.slate} badge="Organic" badgeBg="var(--traction-soft-slate)" badgeColor={C.slate} number="500+" numberColor={C.slate} label="Accounts Reached" sub="Zero paid promotion" />
           <KpiCard color={C.orange} badge="Early Users" badgeBg="var(--traction-soft-orange)" badgeColor={C.orange} number="26" numberColor={C.orange} label="Survey Responses" sub="In first 12 hours" />
           <KpiCard color={C.gray} badge="Salve Regina" badgeBg="var(--traction-soft-gray)" badgeColor={C.gray} number="50+" numberColor={C.gray} label="Educators Invited" sub="Live demo, unsolicited" />
-=======
-          <KpiCard color={C.crimson} badge="↑ Day 1" badgeBg="color-mix(in srgb, #a31621 12%, var(--surface))" badgeColor={C.crimson} number="69" numberColor={C.crimson} label="Followers" sub="+18.9% since launch" />
-          <KpiCard color={C.navy} badge="Social" badgeBg="color-mix(in srgb, #1a3a8f 12%, var(--surface))" badgeColor={C.navy} number="5.2k" numberColor={C.navy} label="Impressions" sub="Total impressions to date" />
-          <KpiCard color={C.slate} badge="Organic" badgeBg="color-mix(in srgb, #4a72c4 12%, var(--surface))" badgeColor={C.slate} number="500+" numberColor={C.slate} label="Accounts Reached" sub="Zero paid promotion" />
-          <KpiCard color={C.orange} badge="Early Users" badgeBg="color-mix(in srgb, #c4503a 12%, var(--surface))" badgeColor={C.orange} number="26" numberColor={C.orange} label="Survey Responses" sub="In first 12 hours" />
-          <KpiCard color={C.gray} badge="Salve Regina" badgeBg="color-mix(in srgb, #7a7a7a 12%, var(--surface))" badgeColor={C.gray} number="50+" numberColor={C.gray} label="Educators Invited" sub="Live demo, unsolicited" />
->>>>>>> Stashed changes
         </div>
 
         {/* TIMELINE + QUOTES */}
@@ -271,11 +246,7 @@ export default function TractionAnalyticsPage() {
               <ProgressBar label="Paid Ads" pct={0} color={C.gray} />
               <ProgressBar label="Institutional Inbound" pct={55} color={C.navy} />
             </div>
-<<<<<<< Updated upstream
             <Infobox label="Zero CAC" labelColor={C.crimson} text="Every follower, impression, and institutional contact earned without paid promotion." textColor={SEM.text2} bg="var(--traction-soft-red)" borderColor="var(--traction-soft-red-border)" />
-=======
-            <Infobox label="Zero CAC" labelColor={C.crimson} text="Every follower, impression, and institutional contact earned without paid promotion." textColor={C.text2} bg="color-mix(in srgb, #a31621 10%, var(--surface))" borderColor="color-mix(in srgb, #a31621 25%, var(--border))" />
->>>>>>> Stashed changes
           </Card>
 
           {/* Audience */}
@@ -306,15 +277,9 @@ export default function TractionAnalyticsPage() {
           <>
             <SectionLabel>Live App Usage</SectionLabel>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-<<<<<<< Updated upstream
               <KpiCard color={C.navy} badge="All time" badgeBg="var(--traction-soft-blue)" badgeColor={C.navy} number={appData.totalAnalyses.toLocaleString()} numberColor={C.navy} label="Analyses Run" sub="Articles analyzed via Polarity" />
               <KpiCard color={C.slate} badge="Feedback" badgeBg="var(--traction-soft-slate)" badgeColor={C.slate} number={appData.totalFeedback.toLocaleString()} numberColor={C.slate} label="User Ratings" sub="In-app feedback submissions" />
               <KpiCard color={C.crimson} badge="Accuracy" badgeBg="var(--traction-soft-red)" badgeColor={C.crimson} number={appData.positiveRate !== null ? `${appData.positiveRate}%` : "—"} numberColor={C.crimson} label="Positive Rating" sub="Users who found it accurate" />
-=======
-              <KpiCard color={C.navy} badge="All time" badgeBg="color-mix(in srgb, #1a3a8f 12%, var(--surface))" badgeColor={C.navy} number={appData.totalAnalyses.toLocaleString()} numberColor={C.navy} label="Analyses Run" sub="Articles analyzed via Polarity" />
-              <KpiCard color={C.slate} badge="Feedback" badgeBg="color-mix(in srgb, #4a72c4 12%, var(--surface))" badgeColor={C.slate} number={appData.totalFeedback.toLocaleString()} numberColor={C.slate} label="User Ratings" sub="In-app feedback submissions" />
-              <KpiCard color={C.crimson} badge="Accuracy" badgeBg="color-mix(in srgb, #a31621 12%, var(--surface))" badgeColor={C.crimson} number={appData.positiveRate !== null ? `${appData.positiveRate}%` : "—"} numberColor={C.crimson} label="Positive Rating" sub="Users who found it accurate" />
->>>>>>> Stashed changes
             </div>
           </>
         )}
