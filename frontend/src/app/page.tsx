@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PANEL_ORDER } from "@/lib/agents";
+import { PANEL_ORDER, AGENTS } from "@/lib/agents";
 
 type BiasCategory5 = "Far Left" | "Lean Left" | "Center" | "Lean Right" | "Far Right";
 
