@@ -176,22 +176,34 @@ Output EXACTLY (no extra text):
 CREDIBILITY_SCORE: (0-100)
 HORIZONTAL_ESTIMATE: (-42 to +42)
 BIAS_CONFIDENCE: (0-100)
+POLITICAL_NEUTRALITY: (0-100; score how free from partisan framing this article is — 100=perfectly centered, low=strong political lean)
+LANGUAGE_NEUTRALITY: (0-100; score how neutral the actual word choices are — 100=clinical/neutral language, low=loaded/emotional/manipulative wording detected)
+COVERAGE_BALANCE: (0-100; score whether multiple perspectives are represented fairly — 100=balanced coverage of all sides, low=one-sided or missing key viewpoints)
 FINAL_SUMMARY: (2-3 sentences)`;
 
     let finalSummary = "";
     let aiCredibility: number | null = null;
     let aiHorizontal: number | null = null;
     let biasConfidence: number | null = null;
+    let politicalNeutrality: number | null = null;
+    let languageNeutrality: number | null = null;
+    let coverageBalance: number | null = null;
 
     try {
       const finalText = await generateGeminiText(finalPrompt);
       const credMatch = finalText.match(/CREDIBILITY_SCORE:\s*(\d+)/i);
       const confMatch = finalText.match(/BIAS_CONFIDENCE:\s*(\d+)/i);
+      const polMatch = finalText.match(/POLITICAL_NEUTRALITY:\s*(\d+)/i);
+      const langMatch = finalText.match(/LANGUAGE_NEUTRALITY:\s*(\d+)/i);
+      const covMatch = finalText.match(/COVERAGE_BALANCE:\s*(\d+)/i);
       const summaryMatch = finalText.match(/FINAL_SUMMARY:\s*([\s\S]+?)(?=\n\n|$)/i);
       if (credMatch) aiCredibility = Math.min(100, Math.max(0, parseInt(credMatch[1], 10)));
       const hEst = parseHorizontalEstimate(finalText);
       if (hEst !== null) aiHorizontal = hEst;
       if (confMatch) biasConfidence = Math.min(100, Math.max(0, parseInt(confMatch[1], 10)));
+      if (polMatch) politicalNeutrality = Math.min(100, Math.max(0, parseInt(polMatch[1], 10)));
+      if (langMatch) languageNeutrality = Math.min(100, Math.max(0, parseInt(langMatch[1], 10)));
+      if (covMatch) coverageBalance = Math.min(100, Math.max(0, parseInt(covMatch[1], 10)));
       finalSummary = summaryMatch ? summaryMatch[1].trim() : finalText.slice(0, 600);
     } catch {
       finalSummary = agentResults.map((r) => `${r.name}: ${r.summary}`).join(". ");
@@ -214,6 +226,9 @@ FINAL_SUMMARY: (2-3 sentences)`;
       biasCategory,
       biasPosition: biasCategory,
       biasConfidence: biasConfidence ?? 50,
+      politicalNeutrality: politicalNeutrality ?? null,
+      languageNeutrality: languageNeutrality ?? null,
+      coverageBalance: coverageBalance ?? null,
       outletBaseline: outletRow
         ? { name: outletRow.newsSource, verticalRank: outletRow.verticalRank, horizontalRank: outletRow.horizontalRank }
         : null,

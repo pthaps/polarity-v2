@@ -17,6 +17,9 @@ type Result = {
   biasCategory?: string;
   biasPosition?: string;
   biasConfidence?: number;
+  politicalNeutrality?: number | null;
+  languageNeutrality?: number | null;
+  coverageBalance?: number | null;
   outletBaseline?: { name: string; verticalRank: number; horizontalRank: number } | null;
 };
 
@@ -415,7 +418,10 @@ export default function Home() {
   const cred = result?.credibilityScore ?? 0;
   const reliability64 = Math.round((cred / 100) * 64);
   void reliability64; // used in Ad Fontes factors below
-  const neutralityPct = Math.round(100 - Math.min(100, (Math.abs(horizontal) / 42) * 40));
+  const politicalNeutralityPct = result?.politicalNeutrality ?? Math.round(100 - (Math.abs(horizontal) / 42) * 100);
+  const languageNeutralityPct = result?.languageNeutrality ?? Math.round(100 - (Math.abs(horizontal) / 42) * 100);
+  const coverageBalancePct = result?.coverageBalance ?? Math.round(100 - (Math.abs(horizontal) / 42) * 100);
+  const neutralityPct = Math.round((politicalNeutralityPct + languageNeutralityPct + coverageBalancePct) / 3);
   const factualPct = Math.round(cred * 0.85);
   const factualLabel = factualPct >= 75 ? "Reporting" : factualPct >= 50 ? "Mostly Reporting" : factualPct >= 35 ? "Mixed" : factualPct >= 15 ? "Mostly Opinion" : "Opinion";
   const factualColor = factualPct >= 75 ? "var(--green)" : factualPct >= 50 ? "var(--green-light)" : factualPct >= 35 ? "var(--orange)" : "var(--red-warn)";
@@ -741,9 +747,9 @@ export default function Home() {
                     { label: "Expression / Reporting", pct: factualPct },
                     { label: "Veracity / Accuracy", pct: Math.min(95, reliability64 + 10) },
                     { label: "Headline Accuracy", pct: Math.min(90, cred) },
-                    { label: "Political Neutrality", pct: neutralityPct },
-                    { label: "Language Neutrality", pct: neutralityPct },
-                    { label: "Coverage Balance", pct: Math.min(75, neutralityPct + 10) },
+                    { label: "Political Neutrality", pct: politicalNeutralityPct },
+                    { label: "Language Neutrality", pct: languageNeutralityPct },
+                    { label: "Coverage Balance", pct: coverageBalancePct },
                   ].map((f) => (
                     <li key={f.label}>
                       <div className="flex items-center justify-between gap-2 text-sm">
