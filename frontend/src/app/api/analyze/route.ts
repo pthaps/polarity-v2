@@ -170,10 +170,13 @@ export async function POST(request: NextRequest) {
     const outletRow: AdFontesRow | null = findOutletByUrl(articleUrl);
     const news = { url: articleUrl, title: title || "", description: description || "", body: newsBody };
 
+    const pipelineT0 = Date.now();
+
     // Run all agents in parallel (no stagger)
     const agentResults = await Promise.all(
       AGENTS.map((_, i) => runAgentWithRetry(i, news))
     );
+    const parallelAgentsMs = Date.now() - pipelineT0;
 
     // Build final synthesis prompt (uses only summaries/scores — not SOURCE lines)
     const baselineNote = outletRow
@@ -198,12 +201,15 @@ FINAL_SUMMARY: (2-3 sentences)`;
 
     // Run Tavily enrichment and final synthesis in parallel
     const fcIndex = agentResults.findIndex((r) => r.agentId === "factchecker");
+    const synthT0 = Date.now();
     const [finalText] = await Promise.all([
       generateGeminiText(finalPrompt).catch(() => ""),
       fcIndex !== -1
         ? enrichWithTavilySources(agentResults[fcIndex].text).then((t) => { agentResults[fcIndex].text = t; })
         : Promise.resolve(),
     ]);
+    const synthesisAndTavilyMs = Date.now() - synthT0;
+    const totalPipelineMs = Date.now() - pipelineT0;
 
     let finalSummary = "";
     let aiCredibility: number | null = null;
@@ -252,6 +258,11 @@ FINAL_SUMMARY: (2-3 sentences)`;
       title: news.title,
       replies: agentResults,
       persistedAnalysis,
+      pipelineTimingMs: {
+        parallelAgentsMs,
+        synthesisAndTavilyMs,
+        totalMs: totalPipelineMs,
+      },
       finalSummary,
       credibilityScore: blended.reliability,
       horizontalRank: blended.horizontal,
