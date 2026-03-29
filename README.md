@@ -46,7 +46,6 @@ Prefer **small, focused commits** so history stays easy to review (and aligns wi
 
 - **One logical change per commit** — e.g. separate `docs:` from `feat:` or `fix:` when unrelated.
 - **Split docs and code** when you touch both but the edits are independent (two commits).
-- **Push multiple commits per session** when you ship several steps in a row — frequent small pushes tend to read better in velocity metrics than one large batch.
 - Use a short **prefix** when helpful: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`.
 
 ---
@@ -214,23 +213,49 @@ Run `frontend/supabase-migration.sql` in your Supabase SQL editor to create the 
 
 **Sub-scores** (Political Neutrality, Language Neutrality, Coverage Balance) are computed per-article by the synthesis call — not from outlet history.
 
+
+
 ---
 
-## API
+## API Reference
 
-The `/api/analyze` endpoint is publicly callable:
-
+### POST `/api/analyze`
 ```bash
-curl -X POST https://your-deployment.vercel.app/api/analyze \
+curl -X POST https://polarity-v2.vercel.app/api/analyze \
   -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://example.com/article",
-    "title": "Article title",
-    "description": "Article description",
-    "body": "Full article text..."
-  }'
+  -d '{"url": "https://www.nytimes.com/2026/03/28/us/politics/example.html"}'
 ```
 
+---
+
+### GET `/api/health`
+
+Returns live service status and cache statistics.
+```bash
+curl https://polarity-v2.vercel.app/api/health
+```
+
+Response:
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-03-29T15:00:00.000Z",
+  "version": "2.0.0",
+  "cache": {
+    "entries": 42,
+    "expiredCleared": 3
+  },
+  "services": {
+    "gemini": true,
+    "tavily": true,
+    "supabase": true
+  }
+}
+```
+
+### Caching
+
+Polarity caches analysis results using a SHA-256 hash of the article URL and content. Cache hits skip the Gemini pipeline entirely, returning results in milliseconds. Default TTL is 1 hour with lazy eviction on read.
 Response includes: `credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `finalSummary`, `replies[]`, `outletBaseline`, `persistedAnalysis` (whether the row was saved to Supabase when configured), `pipelineTimingMs` (parallel agents vs synthesis+Tavily vs total — for debugging, not scoring). The web app shows `pipelineTimingMs` and `persistedAnalysis` in small type under the Summary card.
 
 ---
