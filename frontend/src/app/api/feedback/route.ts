@@ -13,10 +13,7 @@ export async function POST(request: Request) {
     const o = parsed.data;
     const rating = o.rating;
     if (rating !== "yes" && rating !== "no") {
-      return NextResponse.json(
-        { error: 'rating is required and must be "yes" or "no"' },
-        { status: 400 }
-      );
+      return jsonError('rating is required and must be "yes" or "no"', 400, { code: "BAD_REQUEST" });
     }
 
     const url = typeof o.url === "string" ? o.url.slice(0, 8000) : "";
@@ -41,12 +38,10 @@ export async function POST(request: Request) {
       if (csvSaved) {
         return NextResponse.json({ ok: true, persisted: "csv" as const });
       }
-      return NextResponse.json(
-        {
-          error:
-            "Could not save feedback. Supabase is not configured and the local log could not be written.",
-        },
-        { status: 500 }
+      return jsonError(
+        "Could not save feedback. Supabase is not configured and the local log could not be written.",
+        500,
+        { code: "NO_PERSISTENCE_BACKEND" }
       );
     }
 
@@ -66,12 +61,10 @@ export async function POST(request: Request) {
           dbSaved: false,
         });
       }
-      return NextResponse.json(
-        {
-          error:
-            "Could not save feedback. Check the feedback table and RLS policies, or try again.",
-        },
-        { status: 500 }
+      return jsonError(
+        "Could not save feedback. Check the feedback table and RLS policies, or try again.",
+        500,
+        { code: "FEEDBACK_INSERT_FAILED" }
       );
     }
 

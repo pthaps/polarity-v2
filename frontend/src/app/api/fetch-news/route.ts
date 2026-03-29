@@ -18,16 +18,11 @@ export async function POST(request: NextRequest) {
       return jsonError("Invalid URL", 400, { code: "INVALID_URL" });
     }
 
-    try {
-      const data = await extractArticleFromUrl(url);
-      return NextResponse.json(data);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Unknown error";
-      logRouteError("fetch-news", e);
-      return jsonError(`Could not fetch or parse article: ${message}`, 502, { code: "UPSTREAM_FETCH" });
-    }
+    const data = await extractArticleFromUrl(url);
+    return NextResponse.json(data);
   } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
     logRouteError("fetch-news", e);
-    return jsonError("Unexpected error in fetch-news", 500, { code: "INTERNAL" });
+    return jsonError(`Could not fetch or parse article: ${message}`, 502, { code: "UPSTREAM_FETCH" });
   }
 }
