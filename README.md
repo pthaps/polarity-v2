@@ -8,16 +8,45 @@ Paste any news URL or article text → get a bias placement on a five-point poli
 
 ---
 
-## What it does
+## What it does (implemented)
+
+These features are **in the codebase and work** with a valid `GEMINI_API_KEY` (see [Environment variables](#environment-variables) for optional keys):
 
 - **Bias Analyst** — detects loaded language, emotional framing, and selective omission. Outputs specific flagged keywords.
-- **Fact-Checker** — extracts 3-5 specific claims. Each gets a verdict (Supported / Unverified / Disputed) with real source URLs via Tavily Search.
+- **Fact-Checker** — extracts 3–5 specific claims with verdicts (Supported / Unverified / Disputed). **Live source URLs** appear when **`TAVILY_API_KEY`** is set; otherwise AI-suggested source lines still show, without Tavily enrichment.
 - **Synthesizer** — balanced overall reliability and bias assessment.
 - **Final synthesis** — blends all three agents + Ad Fontes outlet baseline into a single credibility score, horizontal bias estimate, and plain-English summary.
-- **Chrome Extension** — calls the same pipeline as the web app (`/api/fetch-news` → `/api/analyze`).
-- **Traction Analytics** — live dashboard of usage metrics from Supabase.
-- **Feedback system** — thumbs up/down + comment, persisted to Supabase with CSV fallback.
-- **Dark mode** — full theme support persisted via localStorage.
+- **Chrome Extension** — same pipeline as the web app (`POST /api/fetch-news` → `POST /api/analyze`); optional page documents `/api/extension-analyze` for lightweight callers.
+- **Traction Analytics** (`/traction-analytics`, `GET /api/traction`) — **requires Supabase**; page still loads if Supabase is missing (API returns an error state).
+- **Feedback** — thumbs up/down + comment; **Supabase preferred**, **CSV file fallback** if the DB is unavailable or misconfigured.
+- **Dark mode** — theme toggle + `localStorage` persistence across main pages (including Traction Analytics).
+
+### Optional vs required behavior
+
+| | **Required** | **Optional (graceful degradation)** |
+|---|--------------|--------------------------------------|
+| Core analysis | `GEMINI_API_KEY` | — |
+| Live search enrichment | — | `TAVILY_API_KEY` |
+| DB-backed traction + analysis history + feedback DB | — | `SUPABASE_URL` + `SUPABASE_KEY` |
+
+### Not implemented (roadmap only)
+
+The following are **not** in this repository as shipped product features; details and rationale: **[`docs/MASTER_PLAN.md`](docs/MASTER_PLAN.md)** (section *Roadmap (explicitly not shipped here)*):
+
+- Multi-article trending / news feed (only **single-URL** `POST /api/fetch-news` exists).
+- URL-hash **analysis cache** in Supabase.
+- **Public API key** auth, embed widget, or third-party rate limits.
+- Standalone **FastAPI** service (`backend/` is documentation-only; APIs live under `frontend/src/app/api/`).
+
+---
+
+## Git workflow (contributors)
+
+Prefer **small, focused commits** so history stays easy to review (and aligns with team velocity expectations):
+
+- **One logical change per commit** — e.g. separate `docs:` from `feat:` or `fix:` when unrelated.
+- **Split docs and code** when you touch both but the edits are independent (two commits).
+- Use a short **prefix** when helpful: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`.
 
 ---
 

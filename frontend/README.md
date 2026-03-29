@@ -27,7 +27,8 @@ npm run build                # production build
 | `src/lib/feedbackCsv.ts` | CSV fallback for feedback persistence |
 | `src/lib/apiErrors.ts` | Shared JSON error helpers + logging for API routes |
 | `src/lib/biasMath.ts` | Pure functions: slider %, five-bucket category (no `fs`; importable from client) |
-| `src/lib/gemini.ts` | Gemini client — default model `gemini-2.5-flash`, retries + fallbacks |
 | `supabase-migration.sql` | SQL to create analyses + feedback tables with RLS |
 
 **Chrome extension** (repo `extension/`) uses `POST /api/fetch-news` then `POST /api/analyze`, matching the web UI. `/api/extension-analyze` is an optional lighter endpoint for tools that only need scores.
+
+**Implemented vs roadmap:** see the root [README](../README.md) (*What it does*, *Optional vs required*, *Not implemented*) and [`docs/MASTER_PLAN.md`](../docs/MASTER_PLAN.md).
