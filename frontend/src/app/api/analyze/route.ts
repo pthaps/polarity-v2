@@ -20,13 +20,18 @@ async function searchTavily(query: string): Promise<Array<{ title: string; url: 
   try {
     const res = await fetch("https://api.tavily.com/search", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ api_key: key, query, max_results: 2, search_depth: "basic" }),
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
+      body: JSON.stringify({ api_key: key, query, max_results: 1, search_depth: "basic" }),
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error("[Tavily] HTTP error", res.status, await res.text());
+      return [];
+    }
     const data = await res.json();
+    console.log("[Tavily] query:", query, "| results:", data.results?.length ?? 0);
     return data.results ?? [];
-  } catch {
+  } catch (e) {
+    console.error("[Tavily] fetch error", e);
     return [];
   }
 }
@@ -39,10 +44,26 @@ async function enrichWithTavilySources(text: string): Promise<string> {
       if (!/^CLAIM:/im.test(part)) return part;
       const claimMatch = part.match(/^CLAIM:\s*(.+?)(?=\nVERDICT:|$)/im);
       if (!claimMatch) return part;
-      const results = await searchTavily(claimMatch[1].trim());
+      const claim = claimMatch[1].trim();
+
+      // Extract source names the AI suggested so we can search "[source] [claim]"
+      const sourceNames = [...part.matchAll(/^SOURCE:\s*([^|]+)/gim)].map((m) => m[1].trim()).filter(Boolean);
+
+      // Search once per source name for targeted results, fall back to plain claim search
+      const queries = sourceNames.length ? sourceNames.map((s) => `${s} ${claim}`) : [claim];
+      const allResults = (await Promise.all(queries.map(searchTavily))).flat();
+
+      // Deduplicate by URL
+      const seen = new Set<string>();
+      const results = allResults.filter((r) => {
+        if (seen.has(r.url)) return false;
+        seen.add(r.url);
+        return true;
+      }).slice(0, 2);
+
       if (!results.length) return part;
       const stripped = part.replace(/^SOURCE:.*$/gim, "").replace(/\n{3,}/g, "\n\n").trimEnd();
-      const sourceLines = results.slice(0, 2).map((r) => {
+      const sourceLines = results.map((r) => {
         const snippet = (r.content ?? "").slice(0, 150).replace(/\n/g, " ").trim();
         return `SOURCE: ${r.title} | ${r.url} | ${snippet}`;
       }).join("\n");
