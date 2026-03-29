@@ -406,7 +406,7 @@ export default function Home() {
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://example.com/article"
-                    className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3.5 text-[15px] text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--border2)] focus:outline-none focus:ring-2 focus:ring-[var(--border)]"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3.5 text-[15px] text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--border2)] focus:outline-none focus:ring-2 focus:ring-[var(--border)]"
                     disabled={loading}
                   />
                 ) : (
@@ -416,7 +416,7 @@ export default function Home() {
                       value={pastedTitle}
                       onChange={(e) => setPastedTitle(e.target.value)}
                       placeholder="Optional headline / title"
-                      className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-2.5 text-[15px] text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--border2)] focus:outline-none focus:ring-2 focus:ring-[var(--border)]"
+                      className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-[15px] text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--border2)] focus:outline-none focus:ring-2 focus:ring-[var(--border)]"
                       disabled={loading}
                     />
                     <textarea
@@ -424,7 +424,7 @@ export default function Home() {
                       onChange={(e) => setArticleText(e.target.value)}
                       placeholder="Paste the full article text here (several paragraphs work best)…"
                       rows={12}
-                      className="min-h-[200px] w-full resize-y rounded-xl border border-[var(--border)] bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--border2)] focus:outline-none focus:ring-2 focus:ring-[var(--border)]"
+                      className="min-h-[200px] w-full resize-y rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3.5 text-[15px] leading-relaxed text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--border2)] focus:outline-none focus:ring-2 focus:ring-[var(--border)]"
                       disabled={loading}
                     />
                   </div>
@@ -434,7 +434,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="rounded-xl bg-[var(--text)] px-8 py-3 text-sm font-bold text-white shadow hover:bg-[var(--text2)] disabled:opacity-50"
+                  className="rounded-xl bg-[var(--accent-blue)] px-8 py-3 text-sm font-bold text-white shadow hover:opacity-90 disabled:opacity-50"
                 >
                   {loading ? "Analyzing…" : "Analyze"}
                 </button>
@@ -444,7 +444,7 @@ export default function Home() {
         ) : (
           /* Results - Image 2 Ad Fontes dashboard */
           <div className="space-y-8">
-            <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
               <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--text3)]">
                 Political Bias — Left / Right Spectrum
               </h2>
@@ -472,7 +472,7 @@ export default function Home() {
                 }}
               >
                 <div
-                  className="absolute top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--text)] bg-white shadow-md transition-all duration-500"
+                  className="absolute top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--text)] bg-[var(--surface)] shadow-md transition-all duration-500"
                   style={{ left: `${Math.min(100, Math.max(0, biasSliderPct))}%` }}
                 />
               </div>
@@ -528,7 +528,7 @@ export default function Home() {
                 { title: "Neutrality Index", score: `${neutralityPct}%`, desc: "Balanced", color: "var(--green-light)", pct: neutralityPct },
                 { title: "Factual Expression", score: `${factualPct}%`, desc: "Reporting vs opinion", color: "var(--green-light)", pct: factualPct },
               ].map((card) => (
-                <div key={card.title} className="rounded-xl border border-[var(--border)] bg-white p-4 shadow-sm">
+                <div key={card.title} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
                   <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">{card.title}</div>
                   <div
                     className={`font-bold ${card.title === "Bias placement" ? "text-xl leading-tight sm:text-2xl" : "text-2xl"}`}
@@ -546,7 +546,7 @@ export default function Home() {
 
             {/* Factors + Warning / Positive */}
             <div className="grid gap-6 md:grid-cols-2">
-              <div className="rounded-xl border border-[var(--border)] bg-white p-5 shadow-sm">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
                 <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--text3)]">Ad Fontes Factors</h3>
                 <ul className="space-y-3">
                   {[
@@ -570,7 +570,7 @@ export default function Home() {
                 </ul>
               </div>
               <div className="space-y-5">
-                <div className="rounded-xl border border-[var(--border)] bg-white p-5 shadow-sm">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
                   <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--red-warn)]">Warning Signs</h3>
                   <ul className="space-y-2 text-sm text-[var(--text2)]">
                     <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Check headline for emotionally charged terms</li>
@@ -578,7 +578,7 @@ export default function Home() {
                     <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Review panel summary below for caveats</li>
                   </ul>
                 </div>
-                <div className="rounded-xl border border-[var(--border)] bg-white p-5 shadow-sm">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
                   <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--green)]">Positive Signals</h3>
                   <ul className="space-y-2 text-sm text-[var(--text2)]">
                     <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Multi-perspective panel analysis</li>
@@ -590,13 +590,13 @@ export default function Home() {
             </div>
 
             {/* Summary + source */}
-            <div className="rounded-xl border border-[var(--border)] bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
               <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text3)]">Summary</h3>
               <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-[var(--text)]">
                 {result.finalSummary || "No summary available."}
               </p>
             </div>
-            <div className="rounded-xl border border-[var(--border)] bg-white px-5 py-4">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-4">
               {result.url.startsWith("paste://") ? (
                 <>
                   <p className="font-semibold text-[var(--text)]">Pasted article</p>
@@ -633,7 +633,7 @@ export default function Home() {
             <div className="flex justify-center pt-2 pb-6">
               <button
                 onClick={() => setResult(null)}
-                className="rounded-xl border border-[var(--border)] bg-white px-6 py-2.5 text-sm font-medium text-[var(--text2)] shadow-sm hover:bg-[var(--surface2)] hover:text-[var(--text)]"
+                className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-6 py-2.5 text-sm font-medium text-[var(--text2)] shadow-sm hover:bg-[var(--surface2)] hover:text-[var(--text)]"
               >
                 ← Analyze another article
               </button>
