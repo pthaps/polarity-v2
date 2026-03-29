@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/readJsonBody";
-import { jsonError } from "@/lib/apiErrors";
+import { jsonError, logRouteError } from "@/lib/apiErrors";
 import { extractArticleFromUrl } from "@/lib/fetchArticleHtml";
 import { generateGeminiText } from "@/lib/gemini";
 import {
@@ -87,10 +87,11 @@ export async function POST(request: NextRequest) {
       article = await extractArticleFromUrl(url);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "fetch failed";
-      return NextResponse.json(
-        { error: `Could not fetch article: ${msg}` },
-        { status: 502, headers: corsHeaders }
-      );
+      logRouteError("extension-analyze", e);
+      return jsonError(`Could not fetch article: ${msg}`, 502, {
+        code: "UPSTREAM_FETCH",
+        headers: corsHeaders,
+      });
     }
 
     const outletRow: AdFontesRow | null = findOutletByUrl(url);
@@ -156,6 +157,7 @@ CONFIDENCE: (integer 0-100; how confident you are in this assessment)`;
       { headers: corsHeaders }
     );
   } catch (e) {
+    logRouteError("extension-analyze", e);
     const message = e instanceof Error ? e.message : "Unknown error";
     return jsonError(message, 500, { code: "INTERNAL", headers: corsHeaders });
   }
