@@ -13,13 +13,39 @@ export async function extractArticleFromUrl(url: string): Promise<{
 
   const res = await fetch(url, {
     headers: {
-      "User-Agent":
-        "Mozilla/5.0 (compatible; PolarityBot/1.0; +https://polarity.local)",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Cache-Control": "no-cache",
+      "Pragma": "no-cache",
     },
     signal: AbortSignal.timeout(15000),
   });
 
   if (!res.ok) {
+    // Fallback: try Tavily extract for paywalled/bot-blocked sites
+    const tavilyKey = process.env.TAVILY_API_KEY;
+    if (tavilyKey && (res.status === 403 || res.status === 401 || res.status === 429)) {
+      const tavilyRes = await fetch("https://api.tavily.com/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${tavilyKey}` },
+        body: JSON.stringify({ urls: [url] }),
+        signal: AbortSignal.timeout(15000),
+      }).catch(() => null);
+      if (tavilyRes?.ok) {
+        const tavilyData = await tavilyRes.json();
+        const extracted = tavilyData.results?.[0];
+        if (extracted?.raw_content) {
+          return {
+            url,
+            title: (extracted.title ?? "").trim().slice(0, 500),
+            description: "",
+            body: extracted.raw_content.trim().slice(0, 50000),
+          };
+        }
+      }
+    }
     throw new Error(`Failed to fetch page (${res.status})`);
   }
 
