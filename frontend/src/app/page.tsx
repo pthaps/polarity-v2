@@ -251,7 +251,6 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-5">
           <a href="#" className="text-sm text-[var(--text2)] hover:text-[var(--text)]">Ad Fontes Methodology</a>
-          <span className="text-sm font-medium text-[var(--text2)]">6-Panel AI Analysis</span>
           <span className="flex items-center gap-1.5 text-sm text-[var(--green)]">
             <span className="h-2 w-2 rounded-full bg-[var(--green)]" />
             Live
@@ -348,30 +347,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Panel: who debates */}
-            <div className="mb-10 rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm">
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text3)]">
-                Who analyzes your article
-              </h2>
-              <p className="mb-4 text-sm text-[var(--text2)]">
-                Three AI analysts run in parallel — Bias, Fact-Check, and Synthesis — then a final call combines their findings with Ad Fontes outlet data.
-              </p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {PANEL_ORDER.map((member) => {
-                  const { name, tagline } = getCharacter(member);
-                  return (
-                    <div
-                      key={member.id}
-                      className="rounded-lg border border-[var(--border)] bg-[var(--surface2)] px-3 py-2"
-                      style={{ borderLeftWidth: 3, borderLeftColor: member.color }}
-                    >
-                      <div className="text-sm font-semibold text-[var(--text)]">{name}</div>
-                      <div className="text-xs text-[var(--text2)]">{tagline}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+
 
             {/* Input card - Image 1 style */}
             <form onSubmit={handleSubmit} className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-lg">
@@ -647,22 +623,74 @@ export default function Home() {
         )}
 
         {loading && (
-          <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center">
-            <div className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--left)]" />
-            <p className="mb-4 text-sm font-semibold text-[var(--text)]">Running 3-analyst parallel analysis…</p>
-            <div className="mx-auto max-w-xs space-y-2">
-              {PANEL_ORDER.map((member) => {
-                const char = (member as { characterName?: string; icon?: string });
-                return (
-                  <div key={member.id} className="flex items-center gap-3 rounded-lg bg-[var(--surface2)] px-3 py-2">
-                    <span>{char.icon ?? "•"}</span>
-                    <span className="text-sm text-[var(--text2)]">{char.characterName ?? member.shortName} analyzing…</span>
-                    <div className="ml-auto h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: member.color }} />
-                  </div>
-                );
-              })}
+          <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-10 text-center">
+            <div className="flex justify-center mb-6">
+              <svg width="160" height="118" viewBox="0 0 680 500" xmlns="http://www.w3.org/2000/svg">
+                <style>{`
+                  @keyframes loadSpinBlue { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                  @keyframes loadSpinRed  { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+                  @keyframes bearBob { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+                  .lspin-blue { transform-origin: 340px 215px; animation: loadSpinBlue 1.5s linear infinite; }
+                  .lspin-red  { transform-origin: 340px 215px; animation: loadSpinRed  1.5s linear infinite; }
+                  .bear-bob   { transform-origin: 340px 215px; animation: bearBob 1.5s ease-in-out infinite; }
+                `}</style>
+                <defs>
+                  <radialGradient id="lCg" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#a0c8ff" stopOpacity="0.15"/>
+                    <stop offset="50%" stopColor="#ff6060" stopOpacity="0.08"/>
+                    <stop offset="100%" stopColor="#000000" stopOpacity="0"/>
+                  </radialGradient>
+                  <radialGradient id="lBf" cx="40%" cy="30%" r="65%">
+                    <stop offset="0%" stopColor="#ffffff"/>
+                    <stop offset="70%" stopColor="#dce8f2"/>
+                    <stop offset="100%" stopColor="#b8cfe0"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="340" cy="215" r="178" fill="url(#lCg)"/>
+                <g className="lspin-blue">
+                  <circle cx="340" cy="215" r="178" fill="none" stroke="#1565C0" strokeWidth="7"   strokeLinecap="round" strokeDasharray="280 840" opacity=".9"/>
+                  <circle cx="340" cy="215" r="153" fill="none" stroke="#1976D2" strokeWidth="5"   strokeLinecap="round" strokeDasharray="240 721" opacity=".7"/>
+                  <circle cx="340" cy="215" r="125" fill="none" stroke="#42A5F5" strokeWidth="3.5" strokeLinecap="round" strokeDasharray="196 589" opacity=".6"/>
+                  <circle cx="340" cy="215" r="103" fill="none" stroke="#90CAF9" strokeWidth="2"   strokeLinecap="round" strokeDasharray="162 485" opacity=".5"/>
+                </g>
+                <g className="lspin-blue" style={{ animationDelay: "-0.4s" }}>
+                  <circle cx="340" cy="215" r="178" fill="none" stroke="#0D47A1" strokeWidth="4.5" strokeLinecap="round" strokeDasharray="140 840" opacity=".5"/>
+                  <circle cx="340" cy="215" r="153" fill="none" stroke="#1E88E5" strokeWidth="3"   strokeLinecap="round" strokeDasharray="120 721" opacity=".35"/>
+                </g>
+                <g className="lspin-red">
+                  <circle cx="340" cy="215" r="178" fill="none" stroke="#B71C1C" strokeWidth="7"   strokeLinecap="round" strokeDasharray="280 840" opacity=".9"/>
+                  <circle cx="340" cy="215" r="153" fill="none" stroke="#C62828" strokeWidth="5"   strokeLinecap="round" strokeDasharray="240 721" opacity=".7"/>
+                  <circle cx="340" cy="215" r="125" fill="none" stroke="#EF5350" strokeWidth="3.5" strokeLinecap="round" strokeDasharray="196 589" opacity=".6"/>
+                  <circle cx="340" cy="215" r="103" fill="none" stroke="#EF9A9A" strokeWidth="2"   strokeLinecap="round" strokeDasharray="162 485" opacity=".5"/>
+                </g>
+                <g className="lspin-red" style={{ animationDelay: "-0.4s" }}>
+                  <circle cx="340" cy="215" r="178" fill="none" stroke="#8B0000" strokeWidth="4.5" strokeLinecap="round" strokeDasharray="140 840" opacity=".5"/>
+                  <circle cx="340" cy="215" r="153" fill="none" stroke="#D32F2F" strokeWidth="3"   strokeLinecap="round" strokeDasharray="120 721" opacity=".35"/>
+                </g>
+                <circle cx="340" cy="215" r="178" fill="none" stroke="#334" strokeWidth="1" opacity=".14"/>
+                <g className="bear-bob">
+                  <circle cx="274" cy="122" r="30" fill="#e0ecf6" stroke="#b0c4d8" strokeWidth="1.5"/>
+                  <circle cx="274" cy="122" r="18" fill="#d4bfba"/>
+                  <circle cx="406" cy="122" r="30" fill="#e0ecf6" stroke="#b0c4d8" strokeWidth="1.5"/>
+                  <circle cx="406" cy="122" r="18" fill="#d4bfba"/>
+                  <ellipse cx="340" cy="195" rx="86" ry="80" fill="url(#lBf)" stroke="#b8cce0" strokeWidth="2"/>
+                  <ellipse cx="320" cy="158" rx="26" ry="16" fill="white" opacity="0.45"/>
+                  <ellipse cx="305" cy="186" rx="13" ry="14" fill="#1a1a2e"/>
+                  <ellipse cx="375" cy="186" rx="13" ry="14" fill="#1a1a2e"/>
+                  <ellipse cx="310" cy="180" rx="5" ry="5" fill="white"/>
+                  <ellipse cx="380" cy="180" rx="5" ry="5" fill="white"/>
+                  <circle cx="313" cy="187" r="2" fill="white" opacity="0.6"/>
+                  <circle cx="383" cy="187" r="2" fill="white" opacity="0.6"/>
+                  <ellipse cx="340" cy="222" rx="30" ry="23" fill="#d8e8f4" opacity="0.8"/>
+                  <ellipse cx="340" cy="216" rx="17" ry="12" fill="#1a1a2e"/>
+                  <ellipse cx="335" cy="212" rx="6" ry="4" fill="#3a3a5e" opacity="0.7"/>
+                  <line x1="340" y1="228" x2="340" y2="234" stroke="#1a1a2e" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M 326 234 Q 340 248 354 234" fill="none" stroke="#1a1a2e" strokeWidth="2.5" strokeLinecap="round"/>
+                </g>
+              </svg>
             </div>
-            <p className="mt-4 text-xs text-[var(--text3)]">This takes 20–60 seconds — each panelist reads the full article.</p>
+            <p className="text-sm font-semibold text-[var(--text)] mb-1">Analyzing article…</p>
+            <p className="text-xs text-[var(--text3)]">This takes about 15–20 seconds</p>
           </div>
         )}
         {error && (
