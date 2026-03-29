@@ -14,6 +14,7 @@
       --bg: #f5f4f0;
       --surface: #ffffff;
       --border: #e2dfd8;
+      --track: #ece9e3;
       --crimson: #a31621;
       --navy: #1a3a8f;
       --slate: #4a72c4;
@@ -22,6 +23,40 @@
       --text: #1a1916;
       --text2: #5a5850;
       --text3: #9a9890;
+      --badge-crimson-bg: #fdf1f2;
+      --badge-navy-bg: #eef1fb;
+      --badge-slate-bg: #eef3fb;
+      --badge-orange-bg: #fdf3f1;
+      --badge-gray-bg: #f3f3f3;
+      --churn-bg: #fdf1f2;
+      --churn-border: #f0c4c8;
+      --infobox-crimson-bg: #fdf1f2;
+      --infobox-crimson-border: #f0c4c8;
+      --infobox-navy-bg: #eef1fb;
+      --infobox-navy-border: #c0cdf0;
+      --infobox-muted-bg: #f5f4f0;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f0e0b;
+      --surface: #1a1916;
+      --border: #2e2c26;
+      --track: #2a2824;
+      --text: #f0eee8;
+      --text2: #9a9688;
+      --text3: #5a5850;
+      --badge-crimson-bg: #2a0a0d;
+      --badge-navy-bg: #0d1630;
+      --badge-slate-bg: #0e1a30;
+      --badge-orange-bg: #2a1008;
+      --badge-gray-bg: #222220;
+      --churn-bg: #2a0a0d;
+      --churn-border: #5a1520;
+      --infobox-crimson-bg: #2a0a0d;
+      --infobox-crimson-border: #5a1520;
+      --infobox-navy-bg: #0d1630;
+      --infobox-navy-border: #1e3070;
+      --infobox-muted-bg: #1a1916;
     }
 
     body {
@@ -31,6 +66,7 @@
       font-size: 14px;
       line-height: 1.6;
       min-height: 100vh;
+      transition: background 0.2s, color 0.2s;
     }
 
     /* ── HEADER ── */
@@ -321,7 +357,7 @@
 
     .progress-track {
       height: 6px;
-      background: #ece9e3;
+      background: var(--track);
       border-radius: 999px;
       overflow: hidden;
     }
@@ -354,8 +390,8 @@
 
     /* churn box */
     .churn-box {
-      background: #fdf1f2;
-      border: 1.5px solid #f0c4c8;
+      background: var(--churn-bg);
+      border: 1.5px solid var(--churn-border);
       border-radius: 10px;
       padding: 24px;
       text-align: center;
@@ -438,7 +474,7 @@
 
     .bar-track {
       height: 5px;
-      background: #ece9e3;
+      background: var(--track);
       border-radius: 999px;
       overflow: hidden;
     }
@@ -527,9 +563,12 @@
       <span class="brand-name">Polarity</span>
       <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-left:8px;letter-spacing:0.08em;text-transform:uppercase;">Traction Dashboard</span>
     </div>
-    <div class="header-meta">
-      <p>Launch Weekend · March 2026</p>
-      <p>Updated manually · All organic</p>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="header-meta">
+        <p>Launch Weekend · March 2026</p>
+        <p>Updated manually · All organic</p>
+      </div>
+      <button id="theme-toggle" onclick="toggleTheme()" style="border:1.5px solid var(--border);background:var(--surface);color:var(--text2);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;line-height:1;transition:background 0.2s,border-color 0.2s;" aria-label="Toggle dark mode">☾</button>
     </div>
   </div>
   <div class="spectrum-strip">
@@ -551,7 +590,7 @@
     <div class="kpi-card">
       <div class="kpi-top-bar" style="background:var(--crimson)"></div>
       <div class="kpi-body">
-        <div class="kpi-badge" style="background:#fdf1f2;color:var(--crimson);">↑ Day 1</div>
+        <div class="kpi-badge" style="background:var(--badge-crimson-bg);color:var(--crimson);">↑ Day 1</div>
         <div class="kpi-number" style="color:var(--crimson)">69</div>
         <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500;">Followers</div>
         <div class="kpi-label">+18.9% since launch</div>
@@ -561,7 +600,7 @@
     <div class="kpi-card">
       <div class="kpi-top-bar" style="background:var(--navy)"></div>
       <div class="kpi-body">
-        <div class="kpi-badge" style="background:#eef1fb;color:var(--navy);">Social</div>
+        <div class="kpi-badge" style="background:var(--badge-navy-bg);color:var(--navy);">Social</div>
         <div class="kpi-number" style="color:var(--navy)">5.2k</div>
         <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500;">Impressions</div>
         <div class="kpi-label">Total impressions to date</div>
@@ -571,7 +610,7 @@
     <div class="kpi-card">
       <div class="kpi-top-bar" style="background:var(--slate)"></div>
       <div class="kpi-body">
-        <div class="kpi-badge" style="background:#eef3fb;color:var(--slate);">Organic</div>
+        <div class="kpi-badge" style="background:var(--badge-slate-bg);color:var(--slate);">Organic</div>
         <div class="kpi-number" style="color:var(--slate)">500+</div>
         <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500;">Accounts Reached</div>
         <div class="kpi-label">Zero paid promotion</div>
@@ -581,7 +620,7 @@
     <div class="kpi-card">
       <div class="kpi-top-bar" style="background:var(--orange)"></div>
       <div class="kpi-body">
-        <div class="kpi-badge" style="background:#fdf3f1;color:var(--orange);">Early Users</div>
+        <div class="kpi-badge" style="background:var(--badge-orange-bg);color:var(--orange);">Early Users</div>
         <div class="kpi-number" style="color:var(--orange)">26</div>
         <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500;">Survey Responses</div>
         <div class="kpi-label">In first 12 hours</div>
@@ -591,7 +630,7 @@
     <div class="kpi-card">
       <div class="kpi-top-bar" style="background:var(--gray)"></div>
       <div class="kpi-body">
-        <div class="kpi-badge" style="background:#f3f3f3;color:var(--gray);">Salve Regina</div>
+        <div class="kpi-badge" style="background:var(--badge-gray-bg);color:var(--gray);">Salve Regina</div>
         <div class="kpi-number" style="color:var(--gray)">50+</div>
         <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500;">Educators Invited</div>
         <div class="kpi-label">Live demo, unsolicited</div>
@@ -798,7 +837,7 @@
           <div class="progress-track"><div class="progress-fill" style="width:55%;background:var(--navy)"></div></div>
         </div>
       </div>
-      <div class="infobox" style="background:#fdf1f2;border:1.5px solid #f0c4c8;">
+      <div class="infobox" style="background:var(--infobox-crimson-bg);border:1.5px solid var(--infobox-crimson-border);">
         <div class="infobox-label" style="color:var(--crimson)">Zero CAC</div>
         <div class="infobox-text" style="color:var(--text2)">Every follower, impression, and institutional contact earned without paid promotion.</div>
       </div>
@@ -830,7 +869,7 @@
           <div class="progress-track"><div class="progress-fill" style="width:25%;background:var(--orange)"></div></div>
         </div>
       </div>
-      <div class="infobox" style="background:#f5f4f0;border:1.5px solid var(--border);">
+      <div class="infobox" style="background:var(--infobox-muted-bg);border:1.5px solid var(--border);">
         <div class="infobox-text" style="color:var(--text3)">Multiple analyses per session · Zero churn · Unsolicited institutional outreach</div>
       </div>
     </div>
@@ -842,10 +881,10 @@
         <div class="churn-label">Reported Churn</div>
         <div class="churn-number">0%</div>
       </div>
-      <div class="infobox" style="background:#f5f4f0;border:1.5px solid var(--border);margin-bottom:10px;">
+      <div class="infobox" style="background:var(--infobox-muted-bg);border:1.5px solid var(--border);margin-bottom:10px;">
         <div class="infobox-text" style="color:var(--text3)">Multiple analyses per session observed across early user cohort.</div>
       </div>
-      <div class="infobox" style="background:#eef1fb;border:1.5px solid #c0cdf0;">
+      <div class="infobox" style="background:var(--infobox-navy-bg);border:1.5px solid var(--infobox-navy-border);">
         <div class="infobox-label" style="color:var(--navy)">PMF Signal</div>
         <div class="infobox-text" style="color:var(--text2)">Institutional partner came inbound — without a pitch.</div>
       </div>
@@ -880,5 +919,20 @@
   </div>
 </footer>
 
+<script>
+  (function() {
+    if (localStorage.getItem('kpi-theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('theme-toggle').textContent = '☀';
+    }
+  })();
+
+  function toggleTheme() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('theme-toggle').textContent = isDark ? '☾' : '☀';
+    localStorage.setItem('kpi-theme', isDark ? 'light' : 'dark');
+  }
+</script>
 </body>
 </html>
