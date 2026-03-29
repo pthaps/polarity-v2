@@ -8,14 +8,33 @@ import {
   type AdFontesRow,
 } from "@/lib/adFontesCsv";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
+
+/** Extension / dashboard: verify route is up and Gemini env is set (no key value exposed). */
+export async function GET() {
+  const hasKey = Boolean(process.env.GEMINI_API_KEY?.trim());
+  return NextResponse.json(
+    {
+      ok: true,
+      route: "extension-analyze",
+      geminiConfigured: hasKey,
+      hint: hasKey
+        ? "POST JSON { url } to analyze."
+        : "Set GEMINI_API_KEY on the server (e.g. Vercel env + redeploy).",
+    },
+    { headers: corsHeaders }
+  );
 }
 
 function parseExtensionResponse(text: string): {
@@ -40,8 +59,17 @@ function parseExtensionResponse(text: string): {
 }
 
 export async function POST(request: NextRequest) {
+  let body: { url?: string };
   try {
-    const body = (await request.json()) as { url?: string };
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON body. Send { \"url\": \"https://...\" }" },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
+  try {
     const url = body.url?.trim();
     if (!url) {
       return NextResponse.json(
@@ -50,9 +78,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY?.trim()) {
       return NextResponse.json(
-        { error: "GEMINI_API_KEY is not set" },
+        {
+          error:
+            "GEMINI_API_KEY is not set on the server. Add it in Vercel → Settings → Environment Variables, then redeploy. Local: use frontend/.env.local",
+        },
         { status: 500, headers: corsHeaders }
       );
     }
@@ -63,13 +94,15 @@ export async function POST(request: NextRequest) {
     } catch (e) {
       const msg = e instanceof Error ? e.message : "fetch failed";
       return NextResponse.json(
-        { error: msg },
+        { error: `Could not fetch article: ${msg}` },
         { status: 502, headers: corsHeaders }
       );
     }
 
     const outletRow: AdFontesRow | null = findOutletByUrl(url);
-    const excerpt = article.body.slice(0, 6000);
+    const excerpt =
+      article.body.trim().slice(0, 6000) ||
+      "(No article body could be extracted from the page; judge from title, description, and URL only.)";
 
     const baselineNote = outletRow
       ? `Ad Fontes chart baseline for "${outletRow.newsSource}": vertical (reliability) rank ${outletRow.verticalRank}/64, horizontal (bias) ${outletRow.horizontalRank} (negative = left, positive = right). Blend this prior with the article text.`
@@ -90,7 +123,21 @@ CREDIBILITY_SCORE: (integer 0-100)
 HORIZONTAL_ESTIMATE: (integer -42 to +42; negative = left, positive = right)
 CONFIDENCE: (integer 0-100; how confident you are in this assessment)`;
 
-    const raw = await generateGeminiText(prompt);
+    let raw: string;
+    try {
+      raw = await generateGeminiText(prompt);
+    } catch (geminiErr) {
+      const gm =
+        geminiErr instanceof Error ? geminiErr.message : String(geminiErr);
+      return NextResponse.json(
+        {
+          error: `Gemini API failed: ${gm}`,
+          code: "GEMINI_ERROR",
+        },
+        { status: 502, headers: corsHeaders }
+      );
+    }
+
     const parsed = parseExtensionResponse(raw);
     const blended = blendReliabilityAndHorizontal(
       outletRow,
@@ -120,7 +167,7 @@ CONFIDENCE: (integer 0-100; how confident you are in this assessment)`;
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json(
-      { error: message },
+      { error: message, code: "INTERNAL" },
       { status: 500, headers: corsHeaders }
     );
   }

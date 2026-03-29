@@ -9,10 +9,39 @@ export type AdFontesRow = {
 
 let cachedRows: AdFontesRow[] | null = null;
 
+function resolveCsvPath(): string | null {
+  const candidates = [
+    path.join(process.cwd(), "src", "data", "ad-fontes-media.csv"),
+    path.join(process.cwd(), ".next", "standalone", "src", "data", "ad-fontes-media.csv"),
+  ];
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
+}
+
 export function loadAdFontesRows(): AdFontesRow[] {
   if (cachedRows) return cachedRows;
-  const csvPath = path.join(process.cwd(), "src", "data", "ad-fontes-media.csv");
-  const raw = fs.readFileSync(csvPath, "utf-8");
+  const csvPath = resolveCsvPath();
+  if (!csvPath) {
+    console.warn(
+      "[adFontesCsv] ad-fontes-media.csv not found; outlet baseline matching disabled."
+    );
+    cachedRows = [];
+    return cachedRows;
+  }
+  let raw: string;
+  try {
+    raw = fs.readFileSync(csvPath, "utf-8");
+  } catch (e) {
+    console.warn("[adFontesCsv] failed to read CSV:", e);
+    cachedRows = [];
+    return cachedRows;
+  }
   const lines = raw.split(/\r?\n/).filter((l) => l.trim().length > 0);
   const rows: AdFontesRow[] = [];
   for (let i = 1; i < lines.length; i++) {
