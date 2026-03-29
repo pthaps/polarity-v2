@@ -1,6 +1,9 @@
 import fs from "fs";
 import path from "path";
 
+export type { BiasCategory5 } from "./biasMath";
+export { horizontalToBiasCategory, horizontalToSliderPercent, biasCategoryIndex } from "./biasMath";
+
 export type AdFontesRow = {
   newsSource: string;
   verticalRank: number;
@@ -62,40 +65,6 @@ export function loadAdFontesRows(): AdFontesRow[] {
 export function verticalToReliability100(vertical: number): number {
   const v = Math.min(64, Math.max(0, vertical));
   return Math.round((v / 64) * 100);
-}
-
-/** Horizontal bias roughly −42 … +42 → Left–Right slider 0–100 */
-export function horizontalToSliderPercent(horizontal: number): number {
-  const h = Math.min(42, Math.max(-42, horizontal));
-  return ((h + 42) / 84) * 100;
-}
-
-export type BiasCategory5 =
-  | "Far Left"
-  | "Lean Left"
-  | "Center"
-  | "Lean Right"
-  | "Far Right";
-
-/** Map horizontal rank (−42 … +42) to five-way spectrum */
-export function horizontalToBiasCategory(horizontal: number): BiasCategory5 {
-  const h = Math.min(42, Math.max(-42, horizontal));
-  if (h <= -26) return "Far Left";
-  if (h <= -9) return "Lean Left";
-  if (h <= 8) return "Center";
-  if (h <= 25) return "Lean Right";
-  return "Far Right";
-}
-
-export function biasCategoryIndex(cat: BiasCategory5): number {
-  const order: BiasCategory5[] = [
-    "Far Left",
-    "Lean Left",
-    "Center",
-    "Lean Right",
-    "Far Right",
-  ];
-  return order.indexOf(cat);
 }
 
 /**

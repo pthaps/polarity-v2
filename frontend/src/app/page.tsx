@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { PANEL_ORDER } from "@/lib/agents";
-
-type BiasCategory5 = "Far Left" | "Lean Left" | "Center" | "Lean Right" | "Far Right";
+import { horizontalToSliderPercent, type BiasCategory5 } from "@/lib/biasMath";
 
 type Reply = { agentId: string; name: string; shortName: string; color: string; text: string; summary: string; score: number | null; keywords?: string[] };
 
@@ -228,11 +227,6 @@ function normalizeBiasCategory(raw: string | undefined): BiasCategory5 {
   if (/lean\s*right/i.test(t) || /^right$/i.test(t) || /center-right/i.test(t)) return "Lean Right";
   if (/centrist/i.test(t) || /^center$/i.test(t) || /^centre$/i.test(t)) return "Center";
   return "Center";
-}
-
-function horizontalToSliderPercent(h: number): number {
-  const clamped = Math.min(42, Math.max(-42, h));
-  return ((clamped + 42) / 84) * 100;
 }
 
 type PanelMember = (typeof PANEL_ORDER)[number];

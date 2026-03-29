@@ -60,6 +60,7 @@ Trust in media is fragile: readers struggle to tell reliable reporting from spin
 | AI | Google Gemini via `@/lib/gemini` (default model configurable; see below) |
 | Search enrichment | Tavily Search API (optional; gated by `TAVILY_API_KEY`) |
 | Outlet baseline | Ad Fontes–style CSV (`frontend/src/data/ad-fontes-media.csv`), domain match |
+| Shared UI math | `frontend/src/lib/biasMath.ts` — spectrum slider / five‑bucket mapping (no Node `fs`; safe for client imports) |
 | Persistence | Supabase Postgres (optional): analyses + feedback; RLS-friendly client |
 | Extension | Chrome Manifest V3, vanilla JS popup + service worker |
 | Deploy | Vercel (root **`frontend/`**) |
@@ -91,7 +92,7 @@ Trust in media is fragile: readers struggle to tell reliable reporting from spin
 
 ### Data schema (response highlights)
 
-`credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `replies[]` (per agent: text, summary, score, keywords), `outletBaseline`, `finalSummary`.
+`credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `replies[]` (per agent: text, summary, score, keywords), `outletBaseline`, `finalSummary`, **`persistedAnalysis`** (boolean — whether the run was stored in Supabase when configured; insert failures are logged server-side).
 
 ### Supabase
 

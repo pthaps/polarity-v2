@@ -235,14 +235,23 @@ FINAL_SUMMARY: (2-3 sentences)`;
     const blended = blendReliabilityAndHorizontal(outletRow, aiCredibility ?? 50, aiHorizontal ?? 0);
     const biasCategory = horizontalToBiasCategory(blended.horizontal);
 
+    let persistedAnalysis = false;
     if (supabase) {
-      void supabase.from("analyses").insert({ url: news.url, title: news.title, replies: agentResults });
+      const { error: insertErr } = await supabase
+        .from("analyses")
+        .insert({ url: news.url, title: news.title, replies: agentResults });
+      if (insertErr) {
+        console.error("[analyze] Supabase analyses insert failed", insertErr);
+      } else {
+        persistedAnalysis = true;
+      }
     }
 
     return NextResponse.json({
       url: news.url,
       title: news.title,
       replies: agentResults,
+      persistedAnalysis,
       finalSummary,
       credibilityScore: blended.reliability,
       horizontalRank: blended.horizontal,

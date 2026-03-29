@@ -54,5 +54,4 @@ SCORE: (1-10; 10 = highly reliable and balanced, 1 = unreliable)`,
   },
 ] as const;
 
-export type AgentId = (typeof AGENTS)[number]["id"];
 export const PANEL_ORDER = [...AGENTS] as const;

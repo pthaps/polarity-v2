@@ -91,7 +91,9 @@ polarity-v2/
 │   │   ├── lib/
 │   │   │   ├── agents.ts              # Agent prompts (Bias, Fact-Check, Synthesizer)
 │   │   │   ├── gemini.ts              # Gemini client with retry logic
+│   │   │   ├── biasMath.ts            # Pure bias/slider math (client-safe; no fs)
 │   │   │   ├── adFontesCsv.ts         # Ad Fontes CSV parser + blending formula
+│   │   │   ├── apiErrors.ts           # JSON error helpers for API routes
 │   │   │   ├── supabase.ts            # Supabase client
 │   │   │   ├── fetchArticleHtml.ts    # Cheerio article scraper
 │   │   │   └── feedbackCsv.ts         # CSV fallback for feedback persistence
@@ -199,7 +201,7 @@ curl -X POST https://your-deployment.vercel.app/api/analyze \
   }'
 ```
 
-Response includes: `credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `finalSummary`, `replies[]`, `outletBaseline`.
+Response includes: `credibilityScore`, `horizontalRank`, `biasCategory`, `biasConfidence`, `politicalNeutrality`, `languageNeutrality`, `coverageBalance`, `finalSummary`, `replies[]`, `outletBaseline`, `persistedAnalysis` (whether the row was saved to Supabase when configured).
 
 ---
 

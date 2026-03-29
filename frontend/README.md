@@ -26,6 +26,7 @@ npm run build                # production build
 | `src/lib/adFontesCsv.ts` | Ad Fontes CSV parser + 55/45 blending formula |
 | `src/lib/feedbackCsv.ts` | CSV fallback for feedback persistence |
 | `src/lib/apiErrors.ts` | Shared JSON error helpers + logging for API routes |
+| `src/lib/biasMath.ts` | Pure functions: slider %, five-bucket category (no `fs`; importable from client) |
 | `src/lib/gemini.ts` | Gemini client — default model `gemini-2.5-flash`, retries + fallbacks |
 | `supabase-migration.sql` | SQL to create analyses + feedback tables with RLS |
 
