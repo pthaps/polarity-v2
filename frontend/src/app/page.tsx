@@ -749,19 +749,21 @@ export default function Home() {
               </div>
               <div className="space-y-5">
                 <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--red-warn)]">Warning Signs</h3>
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--red-warn)]">Watch Out For</h3>
                   <ul className="space-y-2 text-sm text-[var(--text2)]">
-                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Check headline for emotionally charged terms</li>
-                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Consider multiple sources for balance</li>
-                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Review panel summary below for caveats</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Headlines that provoke strong emotion may distort the actual story</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Anonymous or unnamed sources can't be independently verified</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Opinion framed as fact — watch for words like "clearly" or "obviously"</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Stories that only quote one side of an issue</li>
                   </ul>
                 </div>
                 <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--green)]">Positive Signals</h3>
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--green)]">Keep in Mind</h3>
                   <ul className="space-y-2 text-sm text-[var(--text2)]">
-                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Multi-perspective panel analysis</li>
-                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Credibility and bias scores provided</li>
-                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Synthesis from Host and five panelists</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Every outlet has a perspective — cross-reference with other sources</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Bias and accuracy are separate — a biased article can still be factual</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Absence of a claim doesn't mean it's false — it may simply be omitted</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Primary sources (data, official statements) carry more weight than summaries</li>
                   </ul>
                 </div>
               </div>
