@@ -599,7 +599,7 @@ export default function Home() {
                 {AGENTS.map((agent) => (
                   <div key={agent.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5" style={{ borderLeftWidth: 3, borderLeftColor: agent.color }}>
                     <div className="mb-2 flex items-center gap-2">
-                      <span className="text-lg">{agent.icon}</span>
+                      {agent.icon && <span className="text-lg">{agent.icon}</span>}
                       <div>
                         <p className="text-sm font-bold" style={{ color: agent.color }}>{agent.name}</p>
                         <p className="text-[11px] text-[var(--text3)]">{agent.characterTagline}</p>

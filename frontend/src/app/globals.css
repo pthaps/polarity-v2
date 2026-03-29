@@ -34,9 +34,9 @@
   /* panel accents */
   --progressive: #15803D;
   --conservative: #1D4ED8;
-  --bias: #B45309;
-  --fact: #0D9488;
-  --synthesizer: #BE185D;
+  --bias: #B91C1C;
+  --fact: #2563EB;
+  --synthesizer: #8B4512;
   --muted: var(--text3);
 }
 

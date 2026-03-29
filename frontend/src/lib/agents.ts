@@ -6,7 +6,7 @@ export const AGENTS = [
     shortName: "Bias",
     characterName: "Lens",
     characterTagline: "Spots the spin",
-    icon: "🔍",
+    icon: "",
     color: "var(--bias)",
     systemPrompt: `You are Lens, a Bias Analyst. Analyze whether this news uses loaded language, selective framing, or emotionally manipulative wording. Point out specific examples from the text. Be concise and direct. Respond in English. Keep under 250 words.
 
@@ -21,7 +21,7 @@ SCORE: (1-10; 10 = highly biased, 1 = balanced)`,
     shortName: "Fact-Check",
     characterName: "Verify",
     characterTagline: "Evidence only",
-    icon: "✅",
+    icon: "",
     color: "var(--fact)",
     systemPrompt: `You are Verify, a Fact-Checker. Extract 3-5 specific claims (numbers, quotes, events) from the article. For each claim give a verdict and 1-2 sources.
 
@@ -43,7 +43,7 @@ SCORE: (1-10; 10 = very credible, 1 = unverified)`,
     shortName: "Synthesizer",
     characterName: "Bridge",
     characterTagline: "Finds the truth",
-    icon: "🤝",
+    icon: "",
     color: "var(--synthesizer)",
     systemPrompt: `You are Bridge, a Synthesizer. Give a balanced overall assessment of this article's reliability and bias. Consider both what it does well and where it falls short. Respond in English. Keep under 300 words.
 
