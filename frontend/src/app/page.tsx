@@ -23,6 +23,52 @@ type Result = {
 type FactSource = { title: string; summary: string; url: string };
 type FactClaim = { claim: string; verdict: string; sources: FactSource[] };
 
+const KNOWN_DOMAINS: Record<string, string> = {
+  "reuters": "https://www.reuters.com",
+  "ap news": "https://apnews.com",
+  "associated press": "https://apnews.com",
+  "bbc": "https://www.bbc.com/news",
+  "bbc news": "https://www.bbc.com/news",
+  "the new york times": "https://www.nytimes.com",
+  "new york times": "https://www.nytimes.com",
+  "nyt": "https://www.nytimes.com",
+  "the washington post": "https://www.washingtonpost.com",
+  "washington post": "https://www.washingtonpost.com",
+  "the guardian": "https://www.theguardian.com",
+  "guardian": "https://www.theguardian.com",
+  "npr": "https://www.npr.org",
+  "cnn": "https://www.cnn.com",
+  "fox news": "https://www.foxnews.com",
+  "msnbc": "https://www.msnbc.com",
+  "the wall street journal": "https://www.wsj.com",
+  "wall street journal": "https://www.wsj.com",
+  "wsj": "https://www.wsj.com",
+  "politico": "https://www.politico.com",
+  "the hill": "https://thehill.com",
+  "axios": "https://www.axios.com",
+  "bloomberg": "https://www.bloomberg.com",
+  "time": "https://time.com",
+  "newsweek": "https://www.newsweek.com",
+  "usa today": "https://www.usatoday.com",
+  "the atlantic": "https://www.theatlantic.com",
+  "vox": "https://www.vox.com",
+  "propublica": "https://www.propublica.org",
+  "snopes": "https://www.snopes.com",
+  "politifact": "https://www.politifact.com",
+  "factcheck.org": "https://www.factcheck.org",
+  "cdc": "https://www.cdc.gov",
+  "who": "https://www.who.int",
+  "fbi": "https://www.fbi.gov",
+  "doj": "https://www.justice.gov",
+  "white house": "https://www.whitehouse.gov",
+};
+
+function resolveSourceUrl(title: string, rawUrl: string): string {
+  if (rawUrl && rawUrl.startsWith("http")) return rawUrl;
+  const key = title.trim().toLowerCase();
+  return KNOWN_DOMAINS[key] ?? `https://www.${title.trim().toLowerCase().replace(/\s+/g, "")}.com`;
+}
+
 function parseFactClaims(text: string): FactClaim[] {
   const claims: FactClaim[] = [];
   const blocks = text.split(/(?=CLAIM:)/i).filter((b) => /CLAIM:/i.test(b));
@@ -31,10 +77,11 @@ function parseFactClaims(text: string): FactClaim[] {
     const verdict = block.match(/VERDICT:\s*([\s\S]+?)(?=\nSOURCE:|\nCLAIM:|$)/i)?.[1]?.trim() ?? "";
     const sourceLines = [...block.matchAll(/^SOURCE:\s*(.+)$/gim)];
     const sources: FactSource[] = sourceLines.map((m) => {
-      const [rawTitle, ...rest] = m[1].split("|");
-      const title = rawTitle.trim();
-      const summary = rest.join("|").trim();
-      const url = `https://www.google.com/search?q=${encodeURIComponent(title + " " + claim)}&tbm=nws`;
+      const parts = m[1].split("|").map((p) => p.trim());
+      const title = parts[0];
+      const maybeUrl = parts[1] ?? "";
+      const summary = maybeUrl.startsWith("http") ? (parts[2] ?? "") : (parts[1] ?? "");
+      const url = resolveSourceUrl(title, maybeUrl);
       return { title, summary, url };
     });
     if (claim) claims.push({ claim, verdict, sources });
