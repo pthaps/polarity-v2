@@ -812,32 +812,37 @@ export default function Home() {
                 <span>View Sources</span>
                 <span className="text-[var(--text3)]">{showSources ? "▲" : "▼"}</span>
               </button>
-              {showSources && (
-                <div className="mt-2 rounded-xl border border-[var(--border)] bg-[var(--surface2)] p-5 space-y-4 text-sm">
-                  <div>
-                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Article</p>
-                    {result.url.startsWith("paste://") ? (
-                      <p className="text-[var(--text2)]">Pasted article — no URL provided</p>
+              {showSources && (() => {
+                const factReply = result.replies.find((r) => r.agentId === "factchecker");
+                const allSources = factReply
+                  ? parseFactClaims(factReply.text).flatMap((c) => c.sources)
+                  : [];
+                const unique = allSources.filter((s, i, arr) => arr.findIndex((x) => x.title === s.title) === i);
+                return (
+                  <div className="mt-2 rounded-xl border border-[var(--border)] bg-[var(--surface2)] p-5 text-sm">
+                    {unique.length === 0 ? (
+                      <p className="text-[var(--text3)]">No sources found.</p>
                     ) : (
-                      <a href={result.url} target="_blank" rel="noopener noreferrer" className="break-all text-[var(--accent-blue)] underline hover:no-underline">
-                        {result.url}
-                      </a>
+                      <ul className="space-y-3">
+                        {unique.map((s, i) => (
+                          <li key={i}>
+                            <a
+                              href={s.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-medium underline decoration-dotted underline-offset-2 hover:no-underline"
+                              style={{ color: "var(--accent-blue)" }}
+                            >
+                              {s.title}
+                            </a>
+                            {s.summary && <p className="mt-0.5 text-[12px] leading-snug text-[var(--text2)]">{s.summary}</p>}
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
-                  {result.outletBaseline && (
-                    <div>
-                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Ad Fontes Outlet Data</p>
-                      <p className="text-[var(--text2)]">{result.outletBaseline.name}</p>
-                      <p className="text-[var(--text3)]">Reliability rank: {result.outletBaseline.verticalRank}/64 · Horizontal rank: {result.outletBaseline.horizontalRank}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">AI Analysis</p>
-                    <p className="text-[var(--text2)]">Google Gemini — {result.replies.length} analyst perspectives</p>
-                    <p className="text-[var(--text3)]">Ad Fontes Media Chart methodology for outlet baseline scoring</p>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             {/* Analyze another */}
