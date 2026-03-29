@@ -8,22 +8,22 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 
   (async () => {
     try {
-      const res = await fetch(`${base}/api/extension-analyze`, {
+      const fetchRes = await fetch(`${base}/api/fetch-news`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
-      const responseText = await res.text();
-      let data = {};
+      const responseText = await fetchRes.text();
+      let fetchData = {};
       try {
-        data = JSON.parse(responseText);
+        fetchData = JSON.parse(responseText);
       } catch {
         await chrome.storage.local.set({
           [STORAGE_KEY]: {
             success: false,
-            error: res.ok
-              ? "Invalid JSON from server"
-              : `Server error (${res.status}): ${responseText.replace(/\s+/g, " ").trim().slice(0, 200)}`,
+            error: fetchRes.ok
+              ? "Invalid JSON from fetch-news"
+              : `fetch-news (${fetchRes.status}): ${responseText.replace(/\s+/g, " ").trim().slice(0, 200)}`,
             analyzedUrl: url,
             at: Date.now(),
           },
@@ -32,16 +32,63 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         return;
       }
 
-      if (!res.ok) {
-        const code = data.code ? ` [${data.code}]` : "";
+      if (!fetchRes.ok) {
         await chrome.storage.local.set({
           [STORAGE_KEY]: {
             success: false,
             error:
-              (data.error ||
-                (typeof data.message === "string" ? data.message : null) ||
-                res.statusText ||
-                "Request failed") + code,
+              fetchData.error ||
+              (typeof fetchData.message === "string" ? fetchData.message : null) ||
+              "Failed to fetch article",
+            analyzedUrl: url,
+            at: Date.now(),
+          },
+        });
+        sendResponse({ ok: false });
+        return;
+      }
+
+      const payload = {
+        url: fetchData.url,
+        title: fetchData.title,
+        description: fetchData.description,
+        body: fetchData.body,
+      };
+
+      const analyzeRes = await fetch(`${base}/api/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const analyzeText = await analyzeRes.text();
+      let analyzeData = {};
+      try {
+        analyzeData = JSON.parse(analyzeText);
+      } catch {
+        await chrome.storage.local.set({
+          [STORAGE_KEY]: {
+            success: false,
+            error: analyzeRes.ok
+              ? "Invalid JSON from analyze"
+              : `analyze (${analyzeRes.status}): ${analyzeText.replace(/\s+/g, " ").trim().slice(0, 200)}`,
+            analyzedUrl: url,
+            at: Date.now(),
+          },
+        });
+        sendResponse({ ok: false });
+        return;
+      }
+
+      if (!analyzeRes.ok) {
+        const code = analyzeData.code ? ` [${analyzeData.code}]` : "";
+        await chrome.storage.local.set({
+          [STORAGE_KEY]: {
+            success: false,
+            error:
+              (analyzeData.error ||
+                (typeof analyzeData.message === "string" ? analyzeData.message : null) ||
+                analyzeRes.statusText ||
+                "Analysis failed") + code,
             analyzedUrl: url,
             at: Date.now(),
           },
@@ -53,13 +100,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       await chrome.storage.local.set({
         [STORAGE_KEY]: {
           success: true,
-          data: {
-            reliability: data.reliability,
-            biasCategory: data.biasCategory,
-            confidence: data.confidence,
-            outletBaseline: data.outletBaseline,
-            title: data.title,
-          },
+          fullResult: analyzeData,
           analyzedUrl: url,
           at: Date.now(),
         },

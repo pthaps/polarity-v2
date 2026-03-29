@@ -3,110 +3,268 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Polarity AI</title>
+    <title>Polarity</title>
+    <!-- No external font URLs: MV3 extension CSP blocks fonts.googleapis.com unless manifest CSP is expanded. -->
     <style>
       * {
         box-sizing: border-box;
       }
+      :root {
+        --bg: #f5f4f0;
+        --surface: #fafaf8;
+        --surface2: #efefeb;
+        --border: #e0ded8;
+        --text: #1a1916;
+        --text2: #5a5850;
+        --text3: #9a9890;
+        --accent-blue: #2563eb;
+        --accent-red: #b91c1c;
+        --font-display: Georgia, "Times New Roman", serif;
+        --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
       body {
-        width: 320px;
+        width: 300px;
         margin: 0;
-        padding: 16px;
-        font-family: system-ui, -apple-system, sans-serif;
-        font-size: 14px;
-        color: #1a1a1a;
+        padding: 14px 14px 12px;
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text);
+        background: var(--bg);
+        -webkit-font-smoothing: antialiased;
       }
-      h1 {
-        font-size: 16px;
-        margin: 0 0 12px;
-        font-weight: 700;
+      .brand {
+        margin: 0 0 10px;
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        font-weight: 400;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        margin: 0;
+        background: linear-gradient(90deg, var(--accent-blue), var(--accent-red));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
       }
-      .muted {
-        color: #666;
+      @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+        .brand {
+          color: var(--accent-blue);
+          background: none;
+          -webkit-text-fill-color: unset;
+        }
+      }
+      .tagline {
         font-size: 12px;
-        margin-bottom: 12px;
+        font-weight: 500;
+        color: var(--text3);
+        margin: 0 0 12px;
         line-height: 1.4;
       }
+      .btn-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
       button {
-        width: 100%;
-        padding: 10px;
-        font-weight: 600;
+        flex: 1;
+        padding: 8px 10px;
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 12px;
         border: none;
-        border-radius: 8px;
-        background: #1a1a1a;
+        border-radius: 10px;
+        background: var(--accent-blue);
         color: #fff;
         cursor: pointer;
       }
       button:disabled {
-        opacity: 0.5;
+        opacity: 0.45;
         cursor: not-allowed;
       }
-      .results {
-        margin-top: 14px;
-        padding-top: 14px;
-        border-top: 1px solid #e5e5e5;
+      .btn-ghost {
+        background: var(--surface2);
+        color: var(--text2);
+        border: 1px solid var(--border);
       }
-      .row {
+      .status {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text2);
+        margin: 0 0 8px;
+        min-height: 16px;
+      }
+      .card {
+        background: var(--surface);
+        border-radius: 12px;
+        padding: 12px 12px 14px;
+        border: 1px solid var(--border);
+        box-shadow: 0 1px 2px rgba(26, 25, 22, 0.06);
+      }
+      .metric-label {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text3);
+        margin-bottom: 6px;
+      }
+      .rel-row {
         display: flex;
-        justify-content: space-between;
         align-items: baseline;
+        gap: 6px;
         margin-bottom: 8px;
       }
-      .label {
-        color: #666;
+      .rel-num {
+        font-size: 26px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        color: var(--text);
+      }
+      .rel-denom {
         font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
+        font-weight: 600;
+        color: var(--text3);
       }
-      .value {
-        font-weight: 700;
-        font-size: 15px;
-      }
-      .bar {
-        height: 8px;
-        border-radius: 4px;
-        background: #eee;
-        margin-top: 4px;
+      .bar-track {
+        height: 11px;
+        border-radius: 6px;
+        background: var(--surface2);
         overflow: hidden;
       }
-      .bar > div {
+      .bar-fill {
         height: 100%;
-        border-radius: 4px;
-        transition: width 0.3s ease;
+        border-radius: 6px;
+        transition: width 0.35s ease, background 0.2s;
+      }
+      .bias-block {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+      }
+      .spectrum-wrap {
+        position: relative;
+        height: 14px;
+        margin: 6px 0 10px;
+        border-radius: 7px;
+        background: linear-gradient(
+          90deg,
+          var(--accent-blue) 0%,
+          #94a3b8 50%,
+          var(--accent-red) 100%
+        );
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+      }
+      .spectrum-marker {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid var(--text);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        transform: translate(-50%, -50%);
+        transition: left 0.35s ease;
+      }
+      .spectrum-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 9px;
+        font-weight: 700;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 4px;
+      }
+      .bias-score-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .bias-score-label,
+      .bias-name {
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        line-height: 1.2;
+      }
+      .bias-name {
+        text-align: right;
+        flex: 1;
+        min-width: 0;
       }
       .err {
-        color: #b91c1c;
-        font-size: 13px;
-        margin-top: 10px;
-      }
-      a {
-        color: #2563eb;
+        color: var(--accent-red);
         font-size: 12px;
+        font-weight: 600;
+        margin-top: 8px;
+        line-height: 1.35;
+      }
+      .footer-links {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border);
+      }
+      .footer-links .link-full {
+        font-family: var(--font-body);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent-blue);
+        text-decoration: none;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        text-align: left;
+      }
+      .footer-links .link-full:hover {
+        text-decoration: underline;
       }
     </style>
   </head>
   <body>
-    <h1>Polarity AI</h1>
-    <p class="muted">
-      Real-time bias and reliability for the active tab’s URL. Configure your deployment URL in extension options if needed.
-    </p>
-    <button id="analyze" type="button">Analyze this page</button>
-    <p id="status" class="muted" style="margin-top: 10px; display: none"></p>
-    <div id="outlet" class="muted" style="margin-top: 10px; display: none"></div>
-    <div id="results" class="results" style="display: none">
-      <div class="row">
-        <span class="label">Reliability</span>
-        <span id="relValue" class="value">—</span>
+    <p class="brand">Polarity</p>
+    <p class="tagline">Click Scan to Evaluate Bias</p>
+    <div class="btn-row">
+      <button id="analyze" type="button">Scan</button>
+      <button type="button" class="btn-ghost" id="opts">Options</button>
+    </div>
+    <p id="status" class="status"></p>
+    <div id="results" class="card" style="display: none">
+      <div class="metric-label">Reliability</div>
+      <div class="rel-row">
+        <span id="relNum" class="rel-num">—</span>
+        <span class="rel-denom">/ 100</span>
       </div>
-      <div class="bar"><div id="relBar" style="width: 0%; background: #22c55e"></div></div>
-      <div class="row" style="margin-top: 12px">
-        <span class="label">Bias</span>
-        <span id="biasValue" class="value">—</span>
+      <div class="bar-track">
+        <div id="relBar" class="bar-fill" style="width: 0%"></div>
       </div>
-      <div class="muted" id="conf" style="margin-top: 4px"></div>
+      <div class="bias-block">
+        <div class="spectrum-labels">
+          <span>Left</span>
+          <span>Right</span>
+        </div>
+        <div class="spectrum-wrap" id="spectrumTrack" aria-hidden="true">
+          <div id="spectrumMarker" class="spectrum-marker"></div>
+        </div>
+        <div class="bias-score-row">
+          <span class="bias-score-label">Bias Score</span>
+          <span id="biasName" class="bias-name">—</span>
+        </div>
+      </div>
     </div>
     <p id="error" class="err" style="display: none"></p>
-    <p style="margin-top: 12px"><a id="opts" href="#">Options</a></p>
+    <div id="footerLinks" class="footer-links" style="display: none">
+      <button type="button" class="link-full" id="openFull">Full report in Polarity →</button>
+    </div>
     <script src="popup.js"></script>
   </body>
 </html>

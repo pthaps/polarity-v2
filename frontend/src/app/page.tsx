@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { PANEL_ORDER } from "@/lib/agents";
 
 type BiasCategory5 = "Far Left" | "Lean Left" | "Center" | "Lean Right" | "Far Right";
@@ -240,7 +241,9 @@ function getCharacter(m: PanelMember) {
   return { name: x.characterName ?? m.shortName, tagline: x.characterTagline ?? "", icon: x.icon ?? "•" };
 }
 
-export default function Home() {
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const deepLinkStarted = useRef(false);
   const [inputMode, setInputMode] = useState<"url" | "text">("url");
   const [showSources, setShowSources] = useState(false);
   const [url, setUrl] = useState("");
@@ -254,6 +257,7 @@ export default function Home() {
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [feedbackDone, setFeedbackDone] = useState(false);
   const [feedbackErr, setFeedbackErr] = useState<string | null>(null);
+  const [dark, setDark] = useState(false);
 
   const resetFeedback = useCallback(() => {
     setFeedbackRating(null);
@@ -263,38 +267,31 @@ export default function Home() {
     setFeedbackSubmitting(false);
   }, []);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setResult(null);
-    resetFeedback();
-    setLoading(true);
-    try {
-      let payload: { url: string; title: string; description: string; body: string };
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") setDark(true);
+  }, []);
 
-      if (inputMode === "text") {
-        const body = articleText.trim();
-        if (!body) {
-          setError("Paste some article text to analyze.");
-          setLoading(false);
-          return;
-        }
-        payload = {
-          url: "paste://article",
-          title: pastedTitle.trim() || "Pasted article",
-          description: "",
-          body,
-        };
-      } else {
-        if (!url.trim()) {
-          setError("Enter a URL or switch to Paste Article Text.");
-          setLoading(false);
-          return;
-        }
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
+
+  const runUrlAnalysis = useCallback(
+    async (urlToAnalyze: string) => {
+      const trimmed = urlToAnalyze.trim();
+      if (!trimmed) return;
+      setError(null);
+      setResult(null);
+      resetFeedback();
+      setLoading(true);
+      setInputMode("url");
+      setUrl(trimmed);
+      try {
         const fetchRes = await fetch("/api/fetch-news", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: url.trim() }),
+          body: JSON.stringify({ url: trimmed }),
         });
         const fetchData = await fetchRes.json();
         if (!fetchRes.ok) {
@@ -302,31 +299,119 @@ export default function Home() {
           setLoading(false);
           return;
         }
-        payload = {
+        const payload = {
           url: fetchData.url,
           title: fetchData.title,
           description: fetchData.description,
           body: fetchData.body,
         };
-      }
-
-      const analyzeRes = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const analyzeData = await analyzeRes.json();
-      if (!analyzeRes.ok) {
-        setError(analyzeData.error || "Analysis failed.");
+        const analyzeRes = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const analyzeData = await analyzeRes.json();
+        if (!analyzeRes.ok) {
+          setError(analyzeData.error || "Analysis failed.");
+          setLoading(false);
+          return;
+        }
+        setResult(analyzeData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred.");
+      } finally {
         setLoading(false);
+      }
+    },
+    [resetFeedback]
+  );
+
+  /** Full analysis from extension: skip a second /api run */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = sessionStorage.getItem("polarity-hydrate");
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw) as Result;
+      deepLinkStarted.current = true;
+      sessionStorage.removeItem("polarity-hydrate");
+      setError(null);
+      setResult(data);
+      resetFeedback();
+      const u = new URL(window.location.href);
+      if (u.searchParams.has("hydrate")) {
+        u.searchParams.delete("hydrate");
+        const next =
+          u.pathname +
+          (u.searchParams.toString() ? `?${u.searchParams.toString()}` : "") +
+          u.hash;
+        window.history.replaceState(null, "", next);
+      }
+    } catch {
+      sessionStorage.removeItem("polarity-hydrate");
+    }
+  }, [resetFeedback]);
+
+  useEffect(() => {
+    if (deepLinkStarted.current) return;
+    const raw = searchParams.get("url");
+    if (!raw?.trim()) return;
+    let decoded = raw.trim();
+    try {
+      decoded = decodeURIComponent(decoded);
+    } catch {
+      /* keep raw */
+    }
+    if (!/^https?:\/\//i.test(decoded)) return;
+    deepLinkStarted.current = true;
+    void runUrlAnalysis(decoded);
+  }, [searchParams, runUrlAnalysis]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setResult(null);
+    resetFeedback();
+
+    if (inputMode === "text") {
+      const body = articleText.trim();
+      if (!body) {
+        setError("Paste some article text to analyze.");
         return;
       }
-      setResult(analyzeData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred.");
-    } finally {
-      setLoading(false);
+      setLoading(true);
+      try {
+        const payload = {
+          url: "paste://article",
+          title: pastedTitle.trim() || "Pasted article",
+          description: "",
+          body,
+        };
+        const analyzeRes = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const analyzeData = await analyzeRes.json();
+        if (!analyzeRes.ok) {
+          setError(analyzeData.error || "Analysis failed.");
+          setLoading(false);
+          return;
+        }
+        setResult(analyzeData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred.");
+      } finally {
+        setLoading(false);
+      }
+      return;
     }
+
+    if (!url.trim()) {
+      setError("Enter a URL or switch to Paste Article Text.");
+      return;
+    }
+    await runUrlAnalysis(url);
   }
 
   const horizontal = result?.horizontalRank ?? 0;
@@ -994,5 +1079,19 @@ export default function Home() {
         <p className="mt-1">&copy; {new Date().getFullYear()} Polarity. All rights reserved.</p>
       </footer>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--text2)]" style={{ fontFamily: "var(--font-body)" }}>
+          Loading…
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }

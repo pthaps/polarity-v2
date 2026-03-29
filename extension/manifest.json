@@ -3,7 +3,7 @@
   "name": "Polarity AI",
   "version": "1.0.0",
   "description": "Analyze news articles for political bias and reliability (Ad Fontes–informed).",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "storage", "scripting", "tabs"],
   "background": {
     "service_worker": "background.js"
   },
