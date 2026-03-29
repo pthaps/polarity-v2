@@ -32,15 +32,19 @@ function parseSummaryAndScore(rawText: string): {
   text: string;
   summary: string;
   score: number | null;
+  keywords: string[];
 } {
   let text = rawText.trim();
   const summaryMatch = text.match(/\nSUMMARY:\s*(.+?)(?=\n|$)/i);
   const scoreMatch = text.match(/\nSCORE:\s*(\d+(?:\.\d+)?)\s*(?:\/10)?(?=\n|$)/i);
+  const keywordsMatch = text.match(/\nKEYWORDS:\s*(.+?)(?=\n|$)/i);
   const summary = summaryMatch ? summaryMatch[1].trim() : "";
   const score = scoreMatch ? Math.min(10, Math.max(1, parseFloat(scoreMatch[1]))) : null;
+  const keywords = keywordsMatch ? keywordsMatch[1].split(",").map((k) => k.trim()).filter(Boolean) : [];
   if (summaryMatch) text = text.replace(/\nSUMMARY:\s*.+?(?=\n|$)/i, "").trim();
   if (scoreMatch) text = text.replace(/\nSCORE:\s*\d+(?:\.\d+)?\s*(?:\/10)?(?=\n|$)/i, "").trim();
-  return { text, summary, score };
+  if (keywordsMatch) text = text.replace(/\nKEYWORDS:\s*.+?(?=\n|$)/i, "").trim();
+  return { text, summary, score, keywords };
 }
 
 function parseHorizontalEstimate(text: string): number | null {
@@ -73,7 +77,7 @@ async function runAgentWithRetry(index: number, news: { title: string; descripti
     }
   }
 
-  const { text, summary, score } = parseSummaryAndScore(raw);
+  const { text, summary, score, keywords } = parseSummaryAndScore(raw);
   return {
     agentId: agent.id,
     name: agent.name,
@@ -82,6 +86,7 @@ async function runAgentWithRetry(index: number, news: { title: string; descripti
     text,
     summary: summary || text.slice(0, 200),
     score,
+    keywords,
   };
 }
 

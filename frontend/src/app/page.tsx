@@ -5,7 +5,7 @@ import { PANEL_ORDER, AGENTS } from "@/lib/agents";
 
 type BiasCategory5 = "Far Left" | "Lean Left" | "Center" | "Lean Right" | "Far Right";
 
-type Reply = { agentId: string; name: string; shortName: string; color: string; text: string; summary: string; score: number | null };
+type Reply = { agentId: string; name: string; shortName: string; color: string; text: string; summary: string; score: number | null; keywords?: string[] };
 
 type Result = {
   url: string;
@@ -89,6 +89,18 @@ function parseFactClaims(text: string): FactClaim[] {
   return claims;
 }
 
+function highlightKeywords(text: string, keywords: string[]): React.ReactNode[] {
+  if (!keywords.length) return [text];
+  const escaped = keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const regex = new RegExp(`(${escaped.join("|")})`, "gi");
+  const parts = text.split(regex);
+  return parts.map((part, i) =>
+    regex.test(part)
+      ? <mark key={i} style={{ background: "rgba(180,83,9,0.18)", color: "var(--bias)", borderRadius: "3px", padding: "0 2px", fontWeight: 600 }}>{part}</mark>
+      : part
+  );
+}
+
 const VERDICT_STYLES: Record<string, { color: string; bg: string }> = {
   supported:  { color: "var(--green)",    bg: "rgba(21,128,61,0.08)" },
   unverified: { color: "var(--orange)",   bg: "rgba(234,88,12,0.08)" },
@@ -103,7 +115,9 @@ function PanelReplyCard({ reply }: { reply: Reply }) {
   const [expanded, setExpanded] = useState(false);
   const score = reply.score;
   const isFactChecker = reply.agentId === "factchecker";
+  const isBias = reply.agentId === "bias";
   const claims = isFactChecker ? parseFactClaims(reply.text) : [];
+  const keywords = reply.keywords ?? [];
 
   return (
     <div
@@ -169,6 +183,20 @@ function PanelReplyCard({ reply }: { reply: Reply }) {
                   </div>
                 );
               })}
+            </div>
+          ) : isBias && keywords.length > 0 ? (
+            <div>
+              <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-[var(--text)]">{highlightKeywords(reply.text, keywords)}</p>
+              <div className="mt-4 border-t border-[var(--border)] pt-3">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Flagged language</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {keywords.map((kw, i) => (
+                    <span key={i} className="rounded-full px-2.5 py-0.5 text-[11px] font-medium" style={{ background: "rgba(180,83,9,0.12)", color: "var(--bias)" }}>
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
             <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-[var(--text)]">{reply.text}</p>
