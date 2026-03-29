@@ -3,6 +3,7 @@ import { readJsonBody } from "@/lib/readJsonBody";
 import { jsonError, logRouteError } from "@/lib/apiErrors";
 import { AGENTS } from "@/lib/agents";
 import { supabase } from "@/lib/supabase";
+import { getCacheKey, getCached, setCached } from "@/lib/analysisCache";
 import { generateGeminiText } from "@/lib/gemini";
 import {
   blendReliabilityAndHorizontal,
@@ -170,8 +171,14 @@ export async function POST(request: NextRequest) {
     const outletRow: AdFontesRow | null = findOutletByUrl(articleUrl);
     const news = { url: articleUrl, title: title || "", description: description || "", body: newsBody };
 
-    const pipelineT0 = Date.now();
+    // Check cache before running pipeline
+    const cacheKey = await getCacheKey(articleUrl + newsBody.slice(0, 100));
+    const cachedResult = getCached(cacheKey);
+    if (cachedResult) {
+      return NextResponse.json(cachedResult);
+    }
 
+    const pipelineT0 = Date.now();
     // Run all agents in parallel (no stagger)
     const agentResults = await Promise.all(
       AGENTS.map((_, i) => runAgentWithRetry(i, news))
@@ -252,8 +259,8 @@ FINAL_SUMMARY: (2-3 sentences)`;
         persistedAnalysis = true;
       }
     }
-
-    return NextResponse.json({
+    
+    const result = {
       url: news.url,
       title: news.title,
       replies: agentResults,
@@ -275,7 +282,10 @@ FINAL_SUMMARY: (2-3 sentences)`;
       outletBaseline: outletRow
         ? { name: outletRow.newsSource, verticalRank: outletRow.verticalRank, horizontalRank: outletRow.horizontalRank }
         : null,
-    });
+    };
+    setCached(cacheKey, result);
+    return NextResponse.json(result);
+
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     logRouteError("analyze", e);
