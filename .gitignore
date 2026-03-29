@@ -27,3 +27,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# local feedback log (append-only CSV from /api/feedback)
+frontend/src/lib/feedback-log.csv

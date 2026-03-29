@@ -739,31 +739,47 @@ export default function Home() {
             </div>
 
             {/* Factors + Warning / Positive */}
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-6">
               <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
                 <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--text3)]">Ad Fontes Factors</h3>
-                <ul className="space-y-3">
-                  {[
-                    { label: "Expression / Reporting", pct: factualPct },
-                    { label: "Veracity / Accuracy", pct: Math.min(95, reliability64 + 10) },
-                    { label: "Headline Accuracy", pct: Math.min(90, cred) },
-                    { label: "Political Neutrality", pct: politicalNeutralityPct },
-                    { label: "Language Neutrality", pct: languageNeutralityPct },
-                    { label: "Coverage Balance", pct: coverageBalancePct },
-                  ].map((f) => (
-                    <li key={f.label}>
-                      <div className="flex items-center justify-between gap-2 text-sm">
-                        <span className="text-[var(--text2)]">{f.label}</span>
-                        <span className="font-medium">{f.pct}%</span>
-                      </div>
-                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--border)]">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${f.pct}%`, background: f.pct >= 70 ? "var(--green-light)" : "var(--orange)" }} />
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <ul className="space-y-3">
+                    {[
+                      { label: "Expression / Reporting", pct: factualPct },
+                      { label: "Veracity / Accuracy", pct: Math.min(95, reliability64 + 10) },
+                      { label: "Headline Accuracy", pct: Math.min(90, cred) },
+                    ].map((f) => (
+                      <li key={f.label}>
+                        <div className="flex items-center justify-between gap-2 text-sm">
+                          <span className="text-[var(--text2)]">{f.label}</span>
+                          <span className="font-medium">{f.pct}%</span>
+                        </div>
+                        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--border)]">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${f.pct}%`, background: f.pct >= 70 ? "var(--green-light)" : "var(--orange)" }} />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <ul className="space-y-3">
+                    {[
+                      { label: "Political Neutrality", pct: politicalNeutralityPct },
+                      { label: "Language Neutrality", pct: languageNeutralityPct },
+                      { label: "Coverage Balance", pct: coverageBalancePct },
+                    ].map((f) => (
+                      <li key={f.label}>
+                        <div className="flex items-center justify-between gap-2 text-sm">
+                          <span className="text-[var(--text2)]">{f.label}</span>
+                          <span className="font-medium">{f.pct}%</span>
+                        </div>
+                        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--border)]">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${f.pct}%`, background: f.pct >= 70 ? "var(--green-light)" : "var(--orange)" }} />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <div className="space-y-5">
+              <div className="grid gap-5 md:grid-cols-2">
                 <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
                   <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--red-warn)]">Watch Out For</h3>
                   <ul className="space-y-2 text-sm text-[var(--text2)]">
@@ -870,7 +886,9 @@ export default function Home() {
             {/* Feedback */}
             <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
               {feedbackDone ? (
-                <p className="text-center text-sm font-medium text-[var(--green)]">Thanks for your feedback.</p>
+                <p className="text-center text-sm font-medium text-[var(--green)]">
+                  Your feedback has been sent. Thank you.
+                </p>
               ) : (
                 <>
                   <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text3)]">
@@ -890,7 +908,7 @@ export default function Home() {
                       }`}
                     >
                       <span className="text-lg" aria-hidden>
-                        ↑
+                        👍
                       </span>
                       Yes
                     </button>
@@ -907,7 +925,7 @@ export default function Home() {
                       }`}
                     >
                       <span className="text-lg" aria-hidden>
-                        ↓
+                        👎
                       </span>
                       No
                     </button>
@@ -944,13 +962,26 @@ export default function Home() {
                                 comment: feedbackComment.trim() || undefined,
                               }),
                             });
-                            const data = (await res.json()) as { error?: string };
+                            const data = (await res.json()) as {
+                              ok?: boolean;
+                              error?: string;
+                            };
                             if (!res.ok) {
-                              throw new Error(data.error || "Failed to submit feedback.");
+                              throw new Error(
+                                data.error ||
+                                  "We couldn’t save your feedback. Please try again."
+                              );
+                            }
+                            if (data.ok !== true) {
+                              throw new Error("We couldn’t save your feedback. Please try again.");
                             }
                             setFeedbackDone(true);
                           } catch (e) {
-                            setFeedbackErr(e instanceof Error ? e.message : "Failed to submit feedback.");
+                            setFeedbackErr(
+                              e instanceof Error
+                                ? e.message
+                                : "We couldn’t save your feedback. Please try again."
+                            );
                           } finally {
                             setFeedbackSubmitting(false);
                           }
