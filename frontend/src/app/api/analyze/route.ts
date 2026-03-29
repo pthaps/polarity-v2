@@ -9,7 +9,7 @@ import {
   type AdFontesRow,
 } from "@/lib/adFontesCsv";
 
-const MAX_BODY = 6000;
+const MAX_BODY = 3500;
 
 // Stagger requests to avoid hitting rate limits
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -95,9 +95,6 @@ async function runAgentWithRetry(index: number, news: { title: string; descripti
   const agent = AGENTS[index];
   const prompt = buildAgentPrompt(index, news);
 
-  // Small stagger to avoid simultaneous requests
-  await sleep(index * 500);
-
   let raw = "";
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -149,18 +146,12 @@ export async function POST(request: NextRequest) {
     const outletRow: AdFontesRow | null = findOutletByUrl(articleUrl);
     const news = { url: articleUrl, title: title || "", description: description || "", body: newsBody };
 
-    // Run agents with staggered starts to avoid rate limits
+    // Run all agents in parallel (no stagger)
     const agentResults = await Promise.all(
       AGENTS.map((_, i) => runAgentWithRetry(i, news))
     );
 
-    // Enrich fact-checker sources with real article URLs via Tavily
-    const fcIndex = agentResults.findIndex((r) => r.agentId === "factchecker");
-    if (fcIndex !== -1) {
-      agentResults[fcIndex].text = await enrichWithTavilySources(agentResults[fcIndex].text);
-    }
-
-    // Final synthesis
+    // Build final synthesis prompt (uses only summaries/scores — not SOURCE lines)
     const baselineNote = outletRow
       ? `Ad Fontes baseline: "${outletRow.newsSource}" — reliability ${outletRow.verticalRank}/64, bias ${outletRow.horizontalRank} (negative=left, positive=right).`
       : "No outlet baseline — infer from article only.";
@@ -181,6 +172,15 @@ LANGUAGE_NEUTRALITY: (0-100; score how neutral the actual word choices are — 1
 COVERAGE_BALANCE: (0-100; score whether multiple perspectives are represented fairly — 100=balanced coverage of all sides, low=one-sided or missing key viewpoints)
 FINAL_SUMMARY: (2-3 sentences)`;
 
+    // Run Tavily enrichment and final synthesis in parallel
+    const fcIndex = agentResults.findIndex((r) => r.agentId === "factchecker");
+    const [finalText] = await Promise.all([
+      generateGeminiText(finalPrompt).catch(() => ""),
+      fcIndex !== -1
+        ? enrichWithTavilySources(agentResults[fcIndex].text).then((t) => { agentResults[fcIndex].text = t; })
+        : Promise.resolve(),
+    ]);
+
     let finalSummary = "";
     let aiCredibility: number | null = null;
     let aiHorizontal: number | null = null;
@@ -190,7 +190,6 @@ FINAL_SUMMARY: (2-3 sentences)`;
     let coverageBalance: number | null = null;
 
     try {
-      const finalText = await generateGeminiText(finalPrompt);
       const credMatch = finalText.match(/CREDIBILITY_SCORE:\s*(\d+)/i);
       const confMatch = finalText.match(/BIAS_CONFIDENCE:\s*(\d+)/i);
       const polMatch = finalText.match(/POLITICAL_NEUTRALITY:\s*(\d+)/i);

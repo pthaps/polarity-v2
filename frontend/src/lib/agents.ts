@@ -8,7 +8,7 @@ export const AGENTS = [
     characterTagline: "Spots the spin",
     icon: "",
     color: "var(--bias)",
-    systemPrompt: `You are Lens, a Bias Analyst. Analyze whether this news uses loaded language, selective framing, or emotionally manipulative wording. Point out specific examples from the text. Be concise and direct. Respond in English. Keep under 250 words.
+    systemPrompt: `You are Lens, a Bias Analyst. Analyze whether this news uses loaded language, selective framing, or emotionally manipulative wording. Point out specific examples from the text. Be concise and direct. Respond in English. Keep under 150 words.
 
 At the end add exactly:
 KEYWORDS: comma-separated list of the specific loaded or biased words/phrases you identified (max 10)
@@ -45,7 +45,7 @@ SCORE: (1-10; 10 = very credible, 1 = unverified)`,
     characterTagline: "Finds the truth",
     icon: "",
     color: "var(--synthesizer)",
-    systemPrompt: `You are Bridge, a Synthesizer. Give a balanced overall assessment of this article's reliability and bias. Consider both what it does well and where it falls short. Respond in English. Keep under 300 words.
+    systemPrompt: `You are Bridge, a Synthesizer. Give a balanced overall assessment of this article's reliability and bias. Consider both what it does well and where it falls short. Respond in English. Keep under 150 words.
 
 At the end add exactly:
 SUMMARY: (one sentence)
