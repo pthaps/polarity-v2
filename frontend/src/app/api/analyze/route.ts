@@ -9,7 +9,10 @@ import {
   type AdFontesRow,
 } from "@/lib/adFontesCsv";
 
-const MAX_BODY = 8000;
+const MAX_BODY = 6000;
+
+// Stagger requests to avoid hitting rate limits
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function buildAgentPrompt(
   agentIndex: number,
@@ -46,6 +49,42 @@ function parseHorizontalEstimate(text: string): number | null {
   return Math.min(42, Math.max(-42, parseInt(m[1], 10)));
 }
 
+async function runAgentWithRetry(index: number, news: { title: string; description: string; body: string }) {
+  const agent = AGENTS[index];
+  const prompt = buildAgentPrompt(index, news);
+
+  // Small stagger to avoid simultaneous requests
+  await sleep(index * 500);
+
+  let raw = "";
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      raw = await generateGeminiText(prompt);
+      break;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const is429 = /429|quota|RESOURCE_EXHAUSTED/i.test(msg);
+      if (is429 && attempt < 2) {
+        await sleep(3000 * (attempt + 1)); // 3s, then 6s
+        continue;
+      }
+      raw = `Analysis temporarily unavailable — please try again.`;
+      break;
+    }
+  }
+
+  const { text, summary, score } = parseSummaryAndScore(raw);
+  return {
+    agentId: agent.id,
+    name: agent.name,
+    shortName: agent.shortName,
+    color: agent.color,
+    text,
+    summary: summary || text.slice(0, 200),
+    score,
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as {
@@ -67,29 +106,12 @@ export async function POST(request: NextRequest) {
     const outletRow: AdFontesRow | null = findOutletByUrl(articleUrl);
     const news = { url: articleUrl, title: title || "", description: description || "", body: newsBody };
 
-    // ── All 3 agents run in PARALLEL ──────────────────────────────────────
+    // Run agents with staggered starts to avoid rate limits
     const agentResults = await Promise.all(
-      AGENTS.map(async (agent, i) => {
-        let raw = "";
-        try {
-          raw = await generateGeminiText(buildAgentPrompt(i, news));
-        } catch (e) {
-          raw = e instanceof Error ? `(Error: ${e.message})` : "(Failed.)";
-        }
-        const { text, summary, score } = parseSummaryAndScore(raw);
-        return {
-          agentId: agent.id,
-          name: agent.name,
-          shortName: agent.shortName,
-          color: agent.color,
-          text,
-          summary: summary || text.slice(0, 200),
-          score,
-        };
-      })
+      AGENTS.map((_, i) => runAgentWithRetry(i, news))
     );
 
-    // ── Final synthesis — short prompt, fast ──────────────────────────────
+    // Final synthesis
     const baselineNote = outletRow
       ? `Ad Fontes baseline: "${outletRow.newsSource}" — reliability ${outletRow.verticalRank}/64, bias ${outletRow.horizontalRank} (negative=left, positive=right).`
       : "No outlet baseline — infer from article only.";
@@ -129,7 +151,6 @@ FINAL_SUMMARY: (2-3 sentences)`;
     const blended = blendReliabilityAndHorizontal(outletRow, aiCredibility ?? 50, aiHorizontal ?? 0);
     const biasCategory = horizontalToBiasCategory(blended.horizontal);
 
-    // Fire-and-forget save — never block the response
     if (supabase) {
       void supabase.from("analyses").insert({ url: news.url, title: news.title, replies: agentResults });
     }

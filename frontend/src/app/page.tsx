@@ -331,7 +331,8 @@ export default function Home() {
                 <span className="flex-1 border-t border-[var(--border)]" />
               </div>
               <h1 className="mb-4 font-display text-4xl font-normal leading-tight tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-                Where does your source <span style={{ color: "var(--accent-blue)" }}>actually</span>{" "}
+                Where does your source{" "}
+                <span style={{ background: "linear-gradient(90deg, var(--accent-blue), var(--accent-red))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>actually</span>{" "}
                 <span style={{ color: "var(--accent-red)" }}>stand?</span>
               </h1>
               <p className="mb-6 max-w-xl text-[15px] leading-relaxed text-[var(--text2)]">
