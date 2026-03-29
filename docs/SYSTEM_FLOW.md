@@ -1,112 +1,62 @@
 # How Polarity Works
 
-The live app lives under **`frontend/`** in this monorepo ([polarity-v2 layout](https://github.com/pthaps/polarity-v2)).
+The live app lives under **`frontend/`** in this monorepo ([polarity-v2](https://github.com/pthaps/polarity-v2)).  
+Canonical product + architecture detail: **[MASTER_PLAN.md](./MASTER_PLAN.md)**.
 
-**One sentence:** You give us a news link; our AI panel debates it and gives you a simple bias and reliability score.
+**One sentence:** You give a URL or pasted text; **three AI analysts** read the same article **in parallel**; a **fourth synthesis** pass turns their outputs into blended scores (AI + Ad Fontes) and a summary; optional **Tavily** enriches fact-check sources with live URLs.
 
 ---
 
 ## The Big Picture
 
-- You paste a news article URL.
-- We fetch and read the article.
-- A **Host** sets the topic; then **7 AI experts** give short opinions in order.
-- We combine their scores into one result: reliability, bias position, and a short summary.
-- You see an easy-to-read dashboard (scale, cards, summary).
+1. You paste a **URL** (or switch to **paste text** for paywalled pages).
+2. We **fetch** headline, description, and body (truncated for token limits).
+3. We look up an **Ad Fontes–style** outlet baseline by domain.
+4. **Three agents** run **at the same time** (Bias, Fact-Checker, Synthesizer) — each sees the article cold, no peer agent text in that pass.
+5. A **synthesis** Gemini call reads only **short summaries/scores** from those three and emits numeric scores + final summary; **Tavily** may run alongside to enrich claim sources.
+6. Scores are **blended 55% AI / 45% outlet** historical data.
+7. You see the **dashboard**: spectrum, cards, analyst panels, claims, feedback.
 
 ---
 
 ## Workflow Diagram
 
 ```mermaid
-flowchart TB
-  Start([User enters article URL])
-  Fetch[Fetch article: headline, description, body]
-  Host[Host sets focus and topic]
-  Experts[7 experts speak in order: each reads article and prior replies, outputs take and score 1-10]
-  Combine[Synthesize: credibility score, bias position, final summary]
-  Dashboard([Show dashboard: scale, cards, summary])
-
-  Start --> Fetch
-  Fetch --> Host
-  Host --> Experts
-  Experts --> Combine
-  Combine --> Dashboard
-```
-
-**Simple flow (left to right):**
-
-```mermaid
 flowchart LR
-  URL[You enter URL]
-  Fetch[Fetch article]
-  Host[Host sets focus]
-  Experts[7 experts speak in turn]
-  Combine[Combine scores]
-  Dashboard[Show dashboard]
-
-  URL --> Fetch
-  Fetch --> Host
-  Host --> Experts
-  Experts --> Combine
-  Combine --> Dashboard
+  Input[URL or pasted text] --> Fetch[fetch-news / paste body]
+  Fetch --> CSV[Ad Fontes domain match]
+  Fetch --> Agents[3 parallel agents]
+  Agents --> Tav[Tavily enriches fact-check text]
+  Agents --> Synth[Synthesis + 55/45 blend]
+  CSV --> Synth
+  Tav --> Synth
+  Synth --> UI[Dashboard]
 ```
 
 ---
 
-## Step-by-Step
+## The three panel agents (code)
 
-### Step 1 – You enter a link
+| ID | Role |
+|----|------|
+| `bias` | Loaded language & framing (**Lens**); outputs `KEYWORDS` |
+| `factchecker` | Claims with **CLAIM / VERDICT / SOURCE** blocks (**Verify**) |
+| `synthesizer` | Overall reliability & balance (**Bridge**) |
 
-You paste the article URL and click **Analyze**.
-
-### Step 2 – We read the article
-
-Our system visits the page and pulls out the headline, description, and main text.
-
-### Step 3 – The Host kicks off
-
-One AI **Host** reads the article and writes a short note: *"Today we're looking at…"* so everyone stays on topic.
-
-### Step 4 – Seven experts speak in order
-
-Each expert sees the article and what the previous experts said, then gives a short take and a score from 1–10.
-
-### Step 5 – We combine the results
-
-Another AI reads all 7 summaries and scores and produces: one reliability score, a bias label (e.g. Left / Center / Right), and a short final summary.
-
-### Step 6 – You see the dashboard
-
-One screen: bias scale, reliability and bias cards, key factors, and the summary.
+The **final** Gemini call does **not** see full agent essays — only compact summaries/scores — then produces credibility, horizontal estimate, neutrality sub-scores, and `FINAL_SUMMARY`.
 
 ---
 
-## Who Are the 7 Experts?
+## What you get
 
-| Name     | Role                          |
-|----------|-------------------------------|
-| Morgan   | Champion of equality          |
-| Victor   | Guardian of order             |
-| Skeptica | Questions everything          |
-| Lens     | Spots the spin                |
-| Verify   | Evidence only                 |
-| Bridge   | Finds common ground           |
-| Terra    | Real-world impact             |
+- **Bias category** (five buckets) and **credibility score (0–100)**
+- **Keyword** highlights (bias agent) and **claim** rows with verdicts
+- **Optional** real URLs on sources when Tavily is configured
+- **Summary** and **sub-metrics** (political / language / coverage neutrality)
+- **Feedback** (thumbs + comment) with Supabase + CSV fallback
 
 ---
 
-## What You Get at the End
+## Chrome extension
 
-- **Bias position** on a scale (e.g. Left, Center, Right)
-- **Reliability score**
-- **Neutrality index**
-- **Warning signs** (what to watch out for)
-- **Positive signals** (what the article does well)
-- **Short summary** — all in one view
-
----
-
-## Technical Note
-
-Under the hood we use Google Gemini and fetch article content from the URL; outlet baselines come from the Ad Fontes chart data; optional storage in Supabase.
+The extension runs the **same** `fetch-news` → `analyze` pipeline once, then can open the full site with the result **hydrated** via `sessionStorage` so the web UI does not analyze again. See **[../extension/README.md](../extension/README.md)**.

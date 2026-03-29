@@ -1,20 +1,29 @@
-# Polarity AI — Chrome extension
+# Polarity AI — Chrome extension (Manifest V3)
 
-Shows **reliability** (0–100) and **bias category** (Far Left … Far Right) for the active tab by calling your deployed Polarity app’s `POST /api/extension-analyze`.
+Compact **reliability + bias** view for the active tab, backed by the same deployment as the web app.
+
+## Behavior (current)
+
+1. **Scan** runs a **full analysis** on the background:  
+   `POST {apiBaseUrl}/api/fetch-news` → `POST {apiBaseUrl}/api/analyze`  
+   (same pipeline as the website, not the lighter `extension-analyze` shortcut).
+2. The full JSON is stored in extension storage as **`fullResult`**.
+3. The popup shows a **minimal** score + spectrum; **Full report in Polarity →** opens your site and injects the result into **`sessionStorage`** so the **full dashboard appears without running analyze twice**.
+
+**Permissions:** `activeTab`, `storage`, `scripting`, `tabs` (open tab + inject bridge script).
 
 ## Setup
 
-1. Deploy the **`frontend/`** Next.js app (or run `npm run dev` from repo root / `frontend`) with `GEMINI_API_KEY` in `frontend/.env.local`.
-2. Open Chrome → **Extensions** → enable **Developer mode** → **Load unpacked** → select this `extension` folder.
-3. Click **Options** on the extension and set **API base URL** to your site root (e.g. `https://your-project.vercel.app`), no trailing slash.
-4. Open a news article, click the Polarity icon, then **Analyze this page**.
+1. Run or deploy **`frontend/`** with `GEMINI_API_KEY` set (see `frontend/.env.example`).
+2. Chrome → **Extensions** → **Developer mode** → **Load unpacked** → select this `extension` folder.
+3. **Options** → set **API base URL** to your site root (e.g. `https://your-app.vercel.app`), no trailing slash.
+4. Open an **http(s)** article page, click the Polarity icon — analysis starts automatically; use **Scan** to repeat.
 
-## API
+## API notes
 
-The extension sends `{ "url": "<current tab URL>" }` to `{apiBaseUrl}/api/extension-analyze`.
+- **`/api/extension-analyze`** still exists on the server for a faster, lighter Gemini-only path; the extension’s **default** path is **fetch-news + analyze** so popup and website stay aligned.
 
 ## Troubleshooting
 
-- **“Internal Server Error”** in the popup usually means the server returned **500** and (before) the body was HTML. After updating the extension, you should see a **JSON `error` message** when the API returns one (e.g. `GEMINI_API_KEY is not set`).
-- **Vercel:** set **`GEMINI_API_KEY`** (and optionally `GEMINI_MODEL`) in Project → Settings → Environment Variables, then **redeploy**. Root directory must be **`frontend`**.
-- **Local dev:** use an API base URL that matches your port (e.g. `http://localhost:3001`) and ensure `host_permissions` in `manifest.json` includes that port, or reload the unpacked extension after we add it.
+- **500 / missing key:** Set `GEMINI_API_KEY` on the server (Vercel → Env → redeploy).
+- **Wrong port locally:** Match **Options** URL to your dev server (e.g. `http://localhost:3000`) and ensure `manifest.json` `host_permissions` includes that origin.
