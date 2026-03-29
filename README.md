@@ -197,7 +197,7 @@ Run `frontend/supabase-migration.sql` in your Supabase SQL editor to create the 
 
 1. Import the repo on [vercel.com](https://vercel.com)
 2. Set **Root Directory** to `frontend`
-3. Add environment variables: `GEMINI_API_KEY`, `TAVILY_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`
+3. Add environment variables: required `GEMINI_API_KEY`; optional `TAVILY_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`
 4. Deploy — auto-deploys on every push to `main`
 
 ---
