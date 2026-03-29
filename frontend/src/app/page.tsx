@@ -335,7 +335,7 @@ export default function Home() {
       <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/95 px-6 backdrop-blur md:px-10">
         <div className="flex items-center gap-2">
           {LOGO_SVG}
-          <span className="font-display text-xl tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--accent-brown)" }}>
+          <span className="font-display text-xl tracking-tight" style={{ fontFamily: "var(--font-display)", background: "linear-gradient(90deg, var(--accent-blue), var(--accent-red))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
             Polarity
           </span>
         </div>
