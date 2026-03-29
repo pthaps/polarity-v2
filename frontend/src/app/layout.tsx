@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Polarity — Real-Time Media Bias Analysis",
@@ -16,7 +17,10 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})()` }} />
       </head>
-      <body className="antialiased min-h-screen">{children}</body>
+      <body className="antialiased min-h-screen">
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }

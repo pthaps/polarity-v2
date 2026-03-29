@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { PANEL_ORDER } from "@/lib/agents";
 
 type BiasCategory5 = "Far Left" | "Lean Left" | "Center" | "Lean Right" | "Far Right";
@@ -234,77 +234,6 @@ function horizontalToSliderPercent(h: number): number {
   return ((clamped + 42) / 84) * 100;
 }
 
-const LOGO_SVG = (
-  <svg width="44" height="44" viewBox="0 0 680 500" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-    <style>{`
-      @keyframes spinBlue { from { transform: rotate(0deg); }   to { transform: rotate(360deg); } }
-      @keyframes spinRed  { from { transform: rotate(0deg); }   to { transform: rotate(-360deg); } }
-      .spin-blue { transform-origin: 340px 215px; animation: spinBlue 2.5s linear infinite; }
-      .spin-red  { transform-origin: 340px 215px; animation: spinRed  2.5s linear infinite; }
-    `}</style>
-    <defs>
-      <radialGradient id="lgCg" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#a0c8ff" stopOpacity="0.12"/>
-        <stop offset="50%" stopColor="#ff6060" stopOpacity="0.06"/>
-        <stop offset="100%" stopColor="#000000" stopOpacity="0"/>
-      </radialGradient>
-      <radialGradient id="lgBf" cx="40%" cy="30%" r="65%">
-        <stop offset="0%" stopColor="#ffffff"/>
-        <stop offset="70%" stopColor="#dce8f2"/>
-        <stop offset="100%" stopColor="#b8cfe0"/>
-      </radialGradient>
-    </defs>
-    <circle cx="340" cy="215" r="178" fill="url(#lgCg)"/>
-
-    {/* Blue arcs — dashed circles rotating clockwise */}
-    <g className="spin-blue">
-      <circle cx="340" cy="215" r="178" fill="none" stroke="#1565C0" strokeWidth="7"   strokeLinecap="round" strokeDasharray="280 840" opacity=".9"/>
-      <circle cx="340" cy="215" r="153" fill="none" stroke="#1976D2" strokeWidth="5"   strokeLinecap="round" strokeDasharray="240 721" opacity=".7"/>
-      <circle cx="340" cy="215" r="125" fill="none" stroke="#42A5F5" strokeWidth="3.5" strokeLinecap="round" strokeDasharray="196 589" opacity=".6"/>
-      <circle cx="340" cy="215" r="103" fill="none" stroke="#90CAF9" strokeWidth="2"   strokeLinecap="round" strokeDasharray="162 485" opacity=".5"/>
-    </g>
-    <g className="spin-blue" style={{ animationDelay: "-0.4s" }}>
-      <circle cx="340" cy="215" r="178" fill="none" stroke="#0D47A1" strokeWidth="4.5" strokeLinecap="round" strokeDasharray="140 840" opacity=".5"/>
-      <circle cx="340" cy="215" r="153" fill="none" stroke="#1E88E5" strokeWidth="3"   strokeLinecap="round" strokeDasharray="120 721" opacity=".35"/>
-    </g>
-
-    {/* Red arcs — dashed circles rotating counter-clockwise */}
-    <g className="spin-red">
-      <circle cx="340" cy="215" r="178" fill="none" stroke="#B71C1C" strokeWidth="7"   strokeLinecap="round" strokeDasharray="280 840" opacity=".9"/>
-      <circle cx="340" cy="215" r="153" fill="none" stroke="#C62828" strokeWidth="5"   strokeLinecap="round" strokeDasharray="240 721" opacity=".7"/>
-      <circle cx="340" cy="215" r="125" fill="none" stroke="#EF5350" strokeWidth="3.5" strokeLinecap="round" strokeDasharray="196 589" opacity=".6"/>
-      <circle cx="340" cy="215" r="103" fill="none" stroke="#EF9A9A" strokeWidth="2"   strokeLinecap="round" strokeDasharray="162 485" opacity=".5"/>
-    </g>
-    <g className="spin-red" style={{ animationDelay: "-0.4s" }}>
-      <circle cx="340" cy="215" r="178" fill="none" stroke="#8B0000" strokeWidth="4.5" strokeLinecap="round" strokeDasharray="140 840" opacity=".5"/>
-      <circle cx="340" cy="215" r="153" fill="none" stroke="#D32F2F" strokeWidth="3"   strokeLinecap="round" strokeDasharray="120 721" opacity=".35"/>
-    </g>
-
-    <circle cx="340" cy="215" r="178" fill="none" stroke="#334" strokeWidth="1" opacity=".14"/>
-    
-    <circle cx="274" cy="122" r="30" fill="#e0ecf6" stroke="#b0c4d8" strokeWidth="1.5"/>
-    <circle cx="274" cy="122" r="18" fill="#d4bfba"/>
-    <circle cx="406" cy="122" r="30" fill="#e0ecf6" stroke="#b0c4d8" strokeWidth="1.5"/>
-    <circle cx="406" cy="122" r="18" fill="#d4bfba"/>
-    
-    <ellipse cx="340" cy="195" rx="86" ry="80" fill="url(#lgBf)" stroke="#b8cce0" strokeWidth="2"/>
-    <ellipse cx="320" cy="158" rx="26" ry="16" fill="white" opacity="0.45"/>
-    
-    <ellipse cx="305" cy="186" rx="13" ry="14" fill="#1a1a2e"/>
-    <ellipse cx="375" cy="186" rx="13" ry="14" fill="#1a1a2e"/>
-    <ellipse cx="310" cy="180" rx="5" ry="5" fill="white"/>
-    <ellipse cx="380" cy="180" rx="5" ry="5" fill="white"/>
-    <circle cx="313" cy="187" r="2" fill="white" opacity="0.6"/>
-    <circle cx="383" cy="187" r="2" fill="white" opacity="0.6"/>
-    
-    <ellipse cx="340" cy="222" rx="30" ry="23" fill="#d8e8f4" opacity="0.8"/>
-    <ellipse cx="340" cy="216" rx="17" ry="12" fill="#1a1a2e"/>
-    <ellipse cx="335" cy="212" rx="6" ry="4" fill="#3a3a5e" opacity="0.7"/>
-    <line x1="340" y1="228" x2="340" y2="234" stroke="#1a1a2e" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M 326 234 Q 340 248 354 234" fill="none" stroke="#1a1a2e" strokeWidth="2.5" strokeLinecap="round"/>
-  </svg>
-);
-
 type PanelMember = (typeof PANEL_ORDER)[number];
 function getCharacter(m: PanelMember) {
   const x = m as PanelMember & { characterName?: string; characterTagline?: string; icon?: string };
@@ -320,7 +249,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
-  const [dark, setDark] = useState(false);
   const [feedbackRating, setFeedbackRating] = useState<"yes" | "no" | null>(null);
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
@@ -334,16 +262,6 @@ export default function Home() {
     setFeedbackErr(null);
     setFeedbackSubmitting(false);
   }, []);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") setDark(true);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-    localStorage.setItem("theme", dark ? "dark" : "light");
-  }, [dark]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -429,29 +347,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]" style={{ fontFamily: "var(--font-body)" }}>
-      {/* Header */}
-      <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/95 px-6 backdrop-blur md:px-10">
-        <div className="flex items-center gap-2">
-          {LOGO_SVG}
-          <span className="font-display text-xl tracking-tight" style={{ fontFamily: "var(--font-display)", background: "linear-gradient(90deg, var(--accent-blue), var(--accent-red))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-            Polarity
-          </span>
-        </div>
-        <div className="flex items-center gap-5">
-          <span className="flex items-center gap-1.5 text-sm text-[var(--green)]">
-            <span className="h-2 w-2 rounded-full bg-[var(--green)]" />
-            Live
-          </span>
-          <button
-            onClick={() => setDark((d) => !d)}
-            className="rounded-lg border border-[var(--border)] bg-[var(--surface2)] p-1.5 text-[var(--text2)] hover:text-[var(--text)] transition-colors"
-            aria-label="Toggle dark mode"
-          >
-            {dark ? "☀" : "☾"}
-          </button>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-3xl px-6 py-10 md:px-8">
         {!result ? (
           <>
