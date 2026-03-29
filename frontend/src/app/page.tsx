@@ -310,6 +310,10 @@ function getCharacter(m: PanelMember) {
 export default function Home() {
   const [inputMode, setInputMode] = useState<"url" | "text">("url");
   const [showSources, setShowSources] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState<"up" | "down" | null>(null);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [url, setUrl] = useState("");
   const [articleText, setArticleText] = useState("");
   const [pastedTitle, setPastedTitle] = useState("");
@@ -845,10 +849,72 @@ export default function Home() {
               })()}
             </div>
 
+            {/* Feedback */}
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Was this analysis helpful?</p>
+              {feedbackSubmitted ? (
+                <p className="text-sm text-[var(--text2)]">Thanks for your feedback.</p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setFeedbackRating("up")}
+                      className="flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+                      style={{
+                        borderColor: feedbackRating === "up" ? "var(--green)" : "var(--border)",
+                        color: feedbackRating === "up" ? "var(--green)" : "var(--text2)",
+                        background: feedbackRating === "up" ? "rgba(21,128,61,0.08)" : "var(--surface2)",
+                      }}
+                    >
+                      ↑ Yes
+                    </button>
+                    <button
+                      onClick={() => setFeedbackRating("down")}
+                      className="flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+                      style={{
+                        borderColor: feedbackRating === "down" ? "var(--red-warn)" : "var(--border)",
+                        color: feedbackRating === "down" ? "var(--red-warn)" : "var(--text2)",
+                        background: feedbackRating === "down" ? "rgba(220,38,38,0.08)" : "var(--surface2)",
+                      }}
+                    >
+                      ↓ No
+                    </button>
+                  </div>
+                  {feedbackRating && (
+                    <>
+                      <textarea
+                        value={feedbackComment}
+                        onChange={(e) => setFeedbackComment(e.target.value)}
+                        placeholder="Any comments? (optional)"
+                        rows={3}
+                        className="w-full resize-none rounded-lg border border-[var(--border)] bg-[var(--surface2)] px-3 py-2.5 text-[13px] text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--border2)] focus:outline-none"
+                      />
+                      <button
+                        disabled={feedbackLoading}
+                        onClick={async () => {
+                          setFeedbackLoading(true);
+                          await fetch("/api/feedback", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ url: result.url, title: result.title, rating: feedbackRating, comment: feedbackComment }),
+                          });
+                          setFeedbackLoading(false);
+                          setFeedbackSubmitted(true);
+                        }}
+                        className="rounded-lg bg-[var(--accent-blue)] px-5 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                      >
+                        {feedbackLoading ? "Submitting…" : "Submit"}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Analyze another */}
             <div className="flex justify-center pt-2 pb-6">
               <button
-                onClick={() => { setResult(null); setShowSources(false); }}
+                onClick={() => { setResult(null); setShowSources(false); setFeedbackRating(null); setFeedbackComment(""); setFeedbackSubmitted(false); }}
                 className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-6 py-2.5 text-sm font-medium text-[var(--text2)] shadow-sm hover:bg-[var(--surface2)] hover:text-[var(--text)]"
               >
                 ← Analyze another article
