@@ -20,16 +20,24 @@ type Result = {
   outletBaseline?: { name: string; verticalRank: number; horizontalRank: number } | null;
 };
 
-type FactClaim = { claim: string; verdict: string; source: string };
+type FactSource = { title: string; summary: string; url: string };
+type FactClaim = { claim: string; verdict: string; sources: FactSource[] };
 
 function parseFactClaims(text: string): FactClaim[] {
   const claims: FactClaim[] = [];
   const blocks = text.split(/(?=CLAIM:)/i).filter((b) => /CLAIM:/i.test(b));
   for (const block of blocks) {
-    const claim = block.match(/CLAIM:\s*(.+?)(?=\nVERDICT:|\nSOURCE:|$)/is)?.[1]?.trim() ?? "";
-    const verdict = block.match(/VERDICT:\s*(.+?)(?=\nCLAIM:|\nSOURCE:|$)/is)?.[1]?.trim() ?? "";
-    const source = block.match(/SOURCE:\s*(.+?)(?=\nCLAIM:|\nVERDICT:|$)/is)?.[1]?.trim() ?? "";
-    if (claim) claims.push({ claim, verdict, source });
+    const claim = block.match(/CLAIM:\s*(.+?)(?=\nVERDICT:|$)/is)?.[1]?.trim() ?? "";
+    const verdict = block.match(/VERDICT:\s*(.+?)(?=\nSOURCE:|\nCLAIM:|$)/is)?.[1]?.trim() ?? "";
+    const sourceLines = [...block.matchAll(/^SOURCE:\s*(.+)$/gim)];
+    const sources: FactSource[] = sourceLines.map((m) => {
+      const [rawTitle, ...rest] = m[1].split("|");
+      const title = rawTitle.trim();
+      const summary = rest.join("|").trim();
+      const url = `https://www.google.com/search?q=${encodeURIComponent(title + " " + claim)}&tbm=nws`;
+      return { title, summary, url };
+    });
+    if (claim) claims.push({ claim, verdict, sources });
   }
   return claims;
 }
@@ -85,8 +93,30 @@ function PanelReplyCard({ reply }: { reply: Reply }) {
                       <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ color: vs.color, background: "var(--surface)" }}>
                         {c.verdict}
                       </span>
-                      {c.source && (
-                        <span className="text-[11px] text-[var(--text3)]">Source: {c.source}</span>
+                    </div>
+                    <div className="mt-3 border-t border-[var(--border)] pt-3">
+                      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Sources</p>
+                      {c.sources.length === 0 ? (
+                        <p className="text-[12px] text-[var(--text3)]">No reliable sources found</p>
+                      ) : (
+                        <ul className="space-y-2">
+                          {c.sources.map((s, j) => (
+                            <li key={j}>
+                              <a
+                                href={s.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[13px] font-medium underline decoration-dotted underline-offset-2 hover:no-underline"
+                                style={{ color: "var(--accent-blue)" }}
+                              >
+                                {s.title}
+                              </a>
+                              {s.summary && (
+                                <p className="mt-0.5 text-[12px] leading-snug text-[var(--text2)]">{s.summary}</p>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
                       )}
                     </div>
                   </div>
