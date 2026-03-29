@@ -1063,7 +1063,8 @@ export default function Home() {
       </main>
 
       <footer className="mt-12 border-t border-[var(--border)] py-6 text-center text-sm text-[var(--text3)]">
-        Polarity — Multi-perspective news analysis
+        <p>Polarity — Multi-perspective news analysis</p>
+        <p className="mt-1">&copy; {new Date().getFullYear()} Polarity. All rights reserved.</p>
       </footer>
     </div>
   );
