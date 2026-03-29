@@ -20,9 +20,36 @@ type Result = {
   outletBaseline?: { name: string; verticalRank: number; horizontalRank: number } | null;
 };
 
+type FactClaim = { claim: string; verdict: string; source: string };
+
+function parseFactClaims(text: string): FactClaim[] {
+  const claims: FactClaim[] = [];
+  const blocks = text.split(/(?=CLAIM:)/i).filter((b) => /CLAIM:/i.test(b));
+  for (const block of blocks) {
+    const claim = block.match(/CLAIM:\s*(.+?)(?=\nVERDICT:|\nSOURCE:|$)/is)?.[1]?.trim() ?? "";
+    const verdict = block.match(/VERDICT:\s*(.+?)(?=\nCLAIM:|\nSOURCE:|$)/is)?.[1]?.trim() ?? "";
+    const source = block.match(/SOURCE:\s*(.+?)(?=\nCLAIM:|\nVERDICT:|$)/is)?.[1]?.trim() ?? "";
+    if (claim) claims.push({ claim, verdict, source });
+  }
+  return claims;
+}
+
+const VERDICT_STYLES: Record<string, { color: string; bg: string }> = {
+  supported:  { color: "var(--green)",    bg: "rgba(21,128,61,0.08)" },
+  unverified: { color: "var(--orange)",   bg: "rgba(234,88,12,0.08)" },
+  disputed:   { color: "var(--red-warn)", bg: "rgba(220,38,38,0.08)" },
+};
+
+function verdictStyle(verdict: string) {
+  return VERDICT_STYLES[verdict.toLowerCase()] ?? VERDICT_STYLES.unverified;
+}
+
 function PanelReplyCard({ reply }: { reply: Reply }) {
   const [expanded, setExpanded] = useState(false);
   const score = reply.score;
+  const isFactChecker = reply.agentId === "factchecker";
+  const claims = isFactChecker ? parseFactClaims(reply.text) : [];
+
   return (
     <div
       className="overflow-hidden rounded-xl border bg-[var(--surface)] shadow-sm"
@@ -47,7 +74,28 @@ function PanelReplyCard({ reply }: { reply: Reply }) {
       </button>
       {expanded && (
         <div className="border-t border-[var(--border)] px-5 py-4">
-          <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-[var(--text)]">{reply.text}</p>
+          {isFactChecker && claims.length > 0 ? (
+            <div className="space-y-3">
+              {claims.map((c, i) => {
+                const vs = verdictStyle(c.verdict);
+                return (
+                  <div key={i} className="rounded-lg border border-[var(--border)] p-3" style={{ background: vs.bg }}>
+                    <p className="mb-1.5 text-[13px] font-medium text-[var(--text)]">{c.claim}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ color: vs.color, background: "var(--surface)" }}>
+                        {c.verdict}
+                      </span>
+                      {c.source && (
+                        <span className="text-[11px] text-[var(--text3)]">Source: {c.source}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-[var(--text)]">{reply.text}</p>
+          )}
         </div>
       )}
     </div>
@@ -156,6 +204,7 @@ function getCharacter(m: PanelMember) {
 
 export default function Home() {
   const [inputMode, setInputMode] = useState<"url" | "text">("url");
+  const [showSources, setShowSources] = useState(false);
   const [url, setUrl] = useState("");
   const [articleText, setArticleText] = useState("");
   const [pastedTitle, setPastedTitle] = useState("");
@@ -629,10 +678,47 @@ export default function Home() {
               </div>
             )}
 
+            {/* View Sources */}
+            <div>
+              <button
+                onClick={() => setShowSources((v) => !v)}
+                className="flex w-full items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-sm font-medium text-[var(--text2)] hover:bg-[var(--surface2)] hover:text-[var(--text)] transition-colors"
+              >
+                <span>View Sources</span>
+                <span className="text-[var(--text3)]">{showSources ? "▲" : "▼"}</span>
+              </button>
+              {showSources && (
+                <div className="mt-2 rounded-xl border border-[var(--border)] bg-[var(--surface2)] p-5 space-y-4 text-sm">
+                  <div>
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Article</p>
+                    {result.url.startsWith("paste://") ? (
+                      <p className="text-[var(--text2)]">Pasted article — no URL provided</p>
+                    ) : (
+                      <a href={result.url} target="_blank" rel="noopener noreferrer" className="break-all text-[var(--accent-blue)] underline hover:no-underline">
+                        {result.url}
+                      </a>
+                    )}
+                  </div>
+                  {result.outletBaseline && (
+                    <div>
+                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Ad Fontes Outlet Data</p>
+                      <p className="text-[var(--text2)]">{result.outletBaseline.name}</p>
+                      <p className="text-[var(--text3)]">Reliability rank: {result.outletBaseline.verticalRank}/64 · Horizontal rank: {result.outletBaseline.horizontalRank}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">AI Analysis</p>
+                    <p className="text-[var(--text2)]">Google Gemini — {result.replies.length} analyst perspectives</p>
+                    <p className="text-[var(--text3)]">Ad Fontes Media Chart methodology for outlet baseline scoring</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Analyze another */}
             <div className="flex justify-center pt-2 pb-6">
               <button
-                onClick={() => setResult(null)}
+                onClick={() => { setResult(null); setShowSources(false); }}
                 className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-6 py-2.5 text-sm font-medium text-[var(--text2)] shadow-sm hover:bg-[var(--surface2)] hover:text-[var(--text)]"
               >
                 ← Analyze another article
