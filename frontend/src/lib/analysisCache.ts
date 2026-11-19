@@ -9,7 +9,7 @@ const cache = new Map<string, CacheEntry>();
 const DEFAULT_TTL_MS = 1000 * 60 * 60; // 1 hour
 
 export async function getCacheKey(input: string): Promise<string> {
-  const encoded = new TextEncoder().encode(input.trim().toLowerCase());
+  const encoded = new TextEncoder().encode(input);
   const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -26,6 +26,10 @@ export function getCached(key: string): unknown | null {
 }
 
 export function setCached(key: string, result: unknown, ttlMs = DEFAULT_TTL_MS): void {
+  if (cache.size >= 128 && !cache.has(key)) {
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
+  }
   cache.set(key, { result, cachedAt: Date.now(), ttlMs });
 }
 

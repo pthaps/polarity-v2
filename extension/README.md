@@ -10,13 +10,13 @@ Compact **reliability + bias** view for the active tab, backed by the same deplo
 2. The full JSON is stored in extension storage as **`fullResult`**.
 3. The popup shows a **minimal** score + spectrum; **Full report in Polarity →** opens your site and injects the result into **`sessionStorage`** so the **full dashboard appears without running analyze twice**.
 
-**Permissions:** `activeTab`, `storage`, `scripting`, `tabs` (open tab + inject bridge script).
+**Permissions:** `activeTab`, `storage` and `scripting`. HTTPS host access is granted for the API origin saved in Options.
 
 ## Setup
 
-1. Run or deploy **`frontend/`** with `GEMINI_API_KEY` set (see `frontend/.env.example`).
+1. Run or deploy **`frontend/`** with `GEMINI_API_KEY` set (see `frontend/.env.example`). A production deployment also needs the Redis REST settings.
 2. Chrome → **Extensions** → **Developer mode** → **Load unpacked** → select this `extension` folder.
-3. **Options** → set **API base URL** to your site root (e.g. `https://your-app.vercel.app`), no trailing slash.
+3. **Options** → set **API base URL** to your site root (e.g. `https://your-app.vercel.app`), then click **Save** and grant access when Chrome prompts.
 4. Open an **http(s)** article page, click the Polarity icon — analysis starts automatically; use **Scan** to repeat.
 
 ## API notes
@@ -25,5 +25,5 @@ Compact **reliability + bias** view for the active tab, backed by the same deplo
 
 ## Troubleshooting
 
-- **500 / missing key:** Set `GEMINI_API_KEY` on the server (Vercel → Env → redeploy).
-- **Wrong port locally:** Match **Options** URL to your dev server (e.g. `http://localhost:3000`) and ensure `manifest.json` `host_permissions` includes that origin.
+- **Service unavailable:** Check the server Gemini and Redis configuration.
+- **Wrong port locally:** Choose port 3000, 3001 or 3008 on `localhost` or `127.0.0.1` and match the development server.

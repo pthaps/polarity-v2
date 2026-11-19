@@ -20,7 +20,6 @@ export function jsonError(
   return NextResponse.json(body, { status, headers: options?.headers });
 }
 
-export function logRouteError(route: string, e: unknown): void {
-  const msg = e instanceof Error ? e.message : String(e);
-  console.error(`[api/${route}]`, msg, e);
+export function logRouteError(route: string): void {
+  console.error(`[api/${route}] request failed`);
 }

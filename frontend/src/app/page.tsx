@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { PANEL_ORDER } from "@/lib/agents";
+import { parseArticleUrl } from "@/lib/apiInput";
 import { horizontalToSliderPercent, type BiasCategory5 } from "@/lib/biasMath";
 
 type Reply = { agentId: string; name: string; shortName: string; color: string; text: string; summary: string; score: number | null; keywords?: string[] };
@@ -33,66 +34,17 @@ type FactSource = { title: string; summary: string; url: string };
 type FactClaim = { claim: string; verdict: string; sources: FactSource[] };
 type AnalyzePayload = { url: string; title: string; description: string; body: string };
 
-const KNOWN_DOMAINS: Record<string, string> = {
-  "reuters": "https://www.reuters.com",
-  "ap news": "https://apnews.com",
-  "associated press": "https://apnews.com",
-  "bbc": "https://www.bbc.com/news",
-  "bbc news": "https://www.bbc.com/news",
-  "the new york times": "https://www.nytimes.com",
-  "new york times": "https://www.nytimes.com",
-  "nyt": "https://www.nytimes.com",
-  "the washington post": "https://www.washingtonpost.com",
-  "washington post": "https://www.washingtonpost.com",
-  "the guardian": "https://www.theguardian.com",
-  "guardian": "https://www.theguardian.com",
-  "npr": "https://www.npr.org",
-  "cnn": "https://www.cnn.com",
-  "fox news": "https://www.foxnews.com",
-  "msnbc": "https://www.msnbc.com",
-  "the wall street journal": "https://www.wsj.com",
-  "wall street journal": "https://www.wsj.com",
-  "wsj": "https://www.wsj.com",
-  "politico": "https://www.politico.com",
-  "the hill": "https://thehill.com",
-  "axios": "https://www.axios.com",
-  "bloomberg": "https://www.bloomberg.com",
-  "time": "https://time.com",
-  "newsweek": "https://www.newsweek.com",
-  "usa today": "https://www.usatoday.com",
-  "the atlantic": "https://www.theatlantic.com",
-  "vox": "https://www.vox.com",
-  "propublica": "https://www.propublica.org",
-  "snopes": "https://www.snopes.com",
-  "politifact": "https://www.politifact.com",
-  "factcheck.org": "https://www.factcheck.org",
-  "cdc": "https://www.cdc.gov",
-  "who": "https://www.who.int",
-  "fbi": "https://www.fbi.gov",
-  "doj": "https://www.justice.gov",
-  "white house": "https://www.whitehouse.gov",
-};
-
-function resolveSourceUrl(title: string, rawUrl: string): string {
-  if (rawUrl && rawUrl.startsWith("http")) return rawUrl;
-  const key = title.trim().toLowerCase();
-  return KNOWN_DOMAINS[key] ?? `https://www.${title.trim().toLowerCase().replace(/\s+/g, "")}.com`;
-}
-
 function parseFactClaims(text: string): FactClaim[] {
   const claims: FactClaim[] = [];
-  const blocks = text.split(/(?=CLAIM:)/i).filter((b) => /CLAIM:/i.test(b));
+  const blocks = text.split(/(?=^CLAIM:)/im).filter((b) => /CLAIM:/i.test(b));
   for (const block of blocks) {
     const claim = block.match(/CLAIM:\s*([\s\S]+?)(?=\nVERDICT:|$)/i)?.[1]?.trim() ?? "";
-    const verdict = block.match(/VERDICT:\s*([\s\S]+?)(?=\nSOURCE:|\nCLAIM:|$)/i)?.[1]?.trim() ?? "";
-    const sourceLines = [...block.matchAll(/^SOURCE:\s*(.+)$/gim)];
-    const sources: FactSource[] = sourceLines.map((m) => {
-      const parts = m[1].split("|").map((p) => p.trim());
-      const title = parts[0];
-      const maybeUrl = parts[1] ?? "";
-      const summary = maybeUrl.startsWith("http") ? (parts[2] ?? "") : (parts[1] ?? "");
-      const url = resolveSourceUrl(title, maybeUrl);
-      return { title, summary, url };
+    const verdict = block.match(/VERDICT:\s*([\s\S]+?)(?=\nSEARCH_RESULT:|\nCLAIM:|$)/i)?.[1]?.trim() ?? "";
+    const sourceLines = [...block.matchAll(/^SEARCH_RESULT:\s*(.+)$/gim)];
+    const sources: FactSource[] = sourceLines.flatMap((m) => {
+      const [title, rawUrl, summary = ""] = m[1].split("|").map((part) => part.trim());
+      const url = parseArticleUrl(rawUrl);
+      return title && url ? [{ title, summary, url: url.href }] : [];
     });
     if (claim) claims.push({ claim, verdict, sources });
   }
@@ -167,7 +119,7 @@ function PanelReplyCard({ reply }: { reply: Reply }) {
                       </span>
                     </div>
                     <div className="mt-3 border-t border-[var(--border)] pt-3">
-                      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Sources</p>
+                      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text3)]">Related search results</p>
                       {c.sources.length === 0 ? (
                         <p className="text-[12px] text-[var(--text3)]">No reliable sources found</p>
                       ) : (
@@ -376,7 +328,7 @@ function HomeContent() {
     resetFeedback();
 
     if (inputMode === "text") {
-      const body = articleText.trim();
+      const body = articleText.trim().slice(0, 50000);
       if (!body) {
         setError("Paste some article text to analyze.");
         return;
@@ -385,7 +337,7 @@ function HomeContent() {
       try {
         const payload: AnalyzePayload = {
           url: "paste://article",
-          title: pastedTitle.trim() || "Pasted article",
+          title: pastedTitle.trim().slice(0, 500) || "Pasted article",
           description: "",
           body,
         };
@@ -599,7 +551,7 @@ function HomeContent() {
                     </div>
                     <p className="text-[13px] leading-relaxed text-[var(--text2)]">
                       {agent.id === "bias" && "Scans the article for loaded language, selective framing, and emotionally manipulative wording — with specific examples pulled directly from the text."}
-                      {agent.id === "factchecker" && "Extracts 3–5 specific claims (stats, quotes, events) and assesses whether each is well-sourced, unverified, or disputed, with linked sources."}
+                      {agent.id === "factchecker" && "Extracts 3–5 specific claims (stats, quotes, events) and assesses whether each is well-sourced, unverified, or disputed, with related search results when available."}
                       {agent.id === "synthesizer" && "Weighs everything together for a balanced final verdict — what the article does well, where it falls short, and an overall reliability score."}
                     </p>
                   </div>
@@ -756,8 +708,8 @@ function HomeContent() {
                   <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--red-warn)]">Watch Out For</h3>
                   <ul className="space-y-2 text-sm text-[var(--text2)]">
                     <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Headlines that provoke strong emotion may distort the actual story</li>
-                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Anonymous or unnamed sources can't be independently verified</li>
-                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Opinion framed as fact — watch for words like "clearly" or "obviously"</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Anonymous or unnamed sources can&apos;t be independently verified</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Opinion framed as fact — watch for words like &quot;clearly&quot; or &quot;obviously&quot;</li>
                     <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--red-warn)]" />Stories that only quote one side of an issue</li>
                   </ul>
                 </div>
@@ -766,7 +718,7 @@ function HomeContent() {
                   <ul className="space-y-2 text-sm text-[var(--text2)]">
                     <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Every outlet has a perspective — cross-reference with other sources</li>
                     <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Bias and accuracy are separate — a biased article can still be factual</li>
-                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Absence of a claim doesn't mean it's false — it may simply be omitted</li>
+                    <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Absence of a claim doesn&apos;t mean it&apos;s false — it may simply be omitted</li>
                     <li className="flex gap-2"><span className="block h-4 w-0.5 shrink-0 bg-[var(--green)]" />Primary sources (data, official statements) carry more weight than summaries</li>
                   </ul>
                 </div>
@@ -805,7 +757,7 @@ function HomeContent() {
               ) : (
                 <>
                   <a
-                    href={result.url}
+                    href={parseArticleUrl(result.url)?.href}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-semibold text-[var(--accent-blue)] underline hover:no-underline"
@@ -835,7 +787,7 @@ function HomeContent() {
                 onClick={() => setShowSources((v) => !v)}
                 className="flex w-full items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-sm font-medium text-[var(--text2)] hover:bg-[var(--surface2)] hover:text-[var(--text)] transition-colors"
               >
-                <span>View Sources</span>
+                <span>Related search results</span>
                 <span className="text-[var(--text3)]">{showSources ? "▲" : "▼"}</span>
               </button>
               {showSources && (() => {

@@ -1,4 +1,3 @@
-const DEFAULT_BASE = "http://localhost:3000";
 const STORAGE_KEY = "polarityLastResult";
 
 function relColor(pct) {
@@ -50,12 +49,18 @@ function showFooterForPage(pageUrl) {
 async function openFullReport() {
   const { [STORAGE_KEY]: stored } = await chrome.storage.local.get(STORAGE_KEY);
   const { apiBaseUrl } = await chrome.storage.sync.get({ apiBaseUrl: DEFAULT_BASE });
-  const base = (apiBaseUrl || DEFAULT_BASE).replace(/\/$/, "");
+  let base;
+  try {
+    base = parseApiBase(apiBaseUrl).origin;
+  } catch (error) {
+    showStatus(error.message);
+    return;
+  }
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const pageUrl = tab?.url || "";
 
-  if (!stored?.success || !stored.fullResult) {
+  if (!stored?.success || !stored.fullResult || stored.analyzedUrl !== pageUrl) {
     if (pageUrl && /^https?:\/\//i.test(pageUrl)) {
       chrome.tabs.create({ url: `${base}/?url=${encodeURIComponent(pageUrl)}` });
     }
@@ -84,7 +89,8 @@ async function openFullReport() {
         {
           target: { tabId },
           world: "MAIN",
-          func: (payload) => {
+          func: (payload, expectedOrigin) => {
+            if (window.location.origin !== expectedOrigin) return false;
             try {
               sessionStorage.setItem("polarity-hydrate", payload);
             } catch (_) {
@@ -93,7 +99,7 @@ async function openFullReport() {
             const origin = window.location.origin;
             window.location.replace(`${origin}/`);
           },
-          args: [jsonStr],
+          args: [jsonStr, base],
         },
         () => {
           if (chrome.runtime.lastError && pageUrl && /^https?:\/\//i.test(pageUrl)) {
@@ -182,7 +188,11 @@ async function runAnalyze() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     pageUrl = tab?.url || "";
     const stored = await chrome.storage.sync.get({ apiBaseUrl: DEFAULT_BASE });
-    apiBaseUrl = stored.apiBaseUrl || DEFAULT_BASE;
+    const base = parseApiBase(stored.apiBaseUrl);
+    apiBaseUrl = base.origin;
+    if (!await chrome.permissions.contains({ origins: [apiHostPermission(base)] })) {
+      throw new Error("Open Options and save the API URL to grant access.");
+    }
     showFooterForPage(pageUrl);
 
     if (!pageUrl || !/^https?:\/\//i.test(pageUrl)) {

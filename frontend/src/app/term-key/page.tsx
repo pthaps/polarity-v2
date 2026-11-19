@@ -54,7 +54,7 @@ export default function TermKeyPage() {
     },
     {
       term: "Fact-Checker (Verify)",
-      definition: "The AI agent that extracts 3–5 specific claims from the article and assesses whether each is supported, unverified, or disputed, with linked sources.",
+      definition: "The AI agent that extracts 3–5 specific claims from the article and assesses whether each is supported, unverified, or disputed, with related search results when available.",
     },
     {
       term: "Synthesizer (Bridge)",
@@ -67,7 +67,7 @@ export default function TermKeyPage() {
       <main className="mx-auto max-w-3xl px-6 py-10 md:px-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">Term Key</h1>
-          <p className="text-[var(--text2)] text-sm">Definitions for every metric and label used in Polarity's analysis.</p>
+          <p className="text-[var(--text2)] text-sm">Definitions for every metric and label used in Polarity&apos;s analysis.</p>
         </div>
         <div className="space-y-3">
           {terms.map((t) => (

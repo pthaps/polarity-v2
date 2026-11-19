@@ -4,6 +4,7 @@ import path from "path";
 const CSV_NAME = "feedback-log.csv";
 
 function csvField(value: string): string {
+  if (/^[\s\uFEFF]*[=+\-@]|^[\t\r\n]/.test(value)) value = "'" + value;
   if (/[",\n\r]/.test(value)) {
     return `"${value.replace(/"/g, '""')}"`;
   }

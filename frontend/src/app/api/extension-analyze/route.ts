@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/readJsonBody";
+import { enforceRateLimit } from "@/lib/rateLimit";
+import { parseArticleUrl } from "@/lib/apiInput";
 import { jsonError, logRouteError } from "@/lib/apiErrors";
 import { extractArticleFromUrl } from "@/lib/fetchArticleHtml";
 import { generateGeminiText } from "@/lib/gemini";
@@ -13,88 +15,47 @@ import {
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
-
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: corsHeaders });
-}
-
-/** Extension / dashboard: verify route is up and Gemini env is set (no key value exposed). */
 export async function GET() {
-  const hasKey = Boolean(process.env.GEMINI_API_KEY?.trim());
-  return NextResponse.json(
-    {
-      ok: true,
-      route: "extension-analyze",
-      geminiConfigured: hasKey,
-      hint: hasKey
-        ? "POST JSON { url } to analyze."
-        : "Set GEMINI_API_KEY on the server (e.g. Vercel env + redeploy).",
-    },
-    { headers: corsHeaders }
-  );
+  return NextResponse.json({ ok: true, route: "extension-analyze" });
 }
 
 function parseExtensionResponse(text: string): {
   credibility: number;
   horizontal: number;
   confidence: number;
-} {
+} | null {
   const credM = text.match(/CREDIBILITY_SCORE:\s*(\d+)/i);
-  const horM = text.match(/HORIZONTAL_ESTIMATE:\s*(-?\d+)/i);
+  const horM = text.match(/HORIZONTAL_ESTIMATE:\s*([+-]?\d+)/i);
   const confM = text.match(/CONFIDENCE:\s*(\d+)/i);
+  if (!credM || !horM || !confM) return null;
   return {
-    credibility: credM
-      ? Math.min(100, Math.max(0, parseInt(credM[1], 10)))
-      : 50,
-    horizontal: horM
-      ? Math.min(42, Math.max(-42, parseInt(horM[1], 10)))
-      : 0,
-    confidence: confM
-      ? Math.min(100, Math.max(0, parseInt(confM[1], 10)))
-      : 50,
+    credibility: Math.min(100, Math.max(0, parseInt(credM[1], 10))),
+    horizontal: Math.min(42, Math.max(-42, parseInt(horM[1], 10))),
+    confidence: Math.min(100, Math.max(0, parseInt(confM[1], 10))),
   };
 }
 
 export async function POST(request: NextRequest) {
-  const parsed = await readJsonBody<{ url?: string }>(request, {
-    invalidJsonHeaders: corsHeaders,
-    invalidJsonMessage: 'Invalid JSON body. Send { "url": "https://..." }',
-  });
+  const blocked = await enforceRateLimit(request, "extension-analyze");
+  if (blocked) return blocked;
+  const parsed = await readJsonBody<{ url?: unknown }>(request, 16 * 1024);
   if (!parsed.ok) return parsed.response;
-  const body = parsed.data;
+  const url = parseArticleUrl(parsed.data.url);
+  if (!url) return jsonError("A valid HTTP(S) article URL is required", 400, { code: "INVALID_URL" });
 
   try {
-    const url = body.url?.trim();
-    if (!url) {
-      return jsonError("url is required", 400, { code: "BAD_REQUEST", headers: corsHeaders });
-    }
-
     if (!process.env.GEMINI_API_KEY?.trim()) {
-      return jsonError(
-        "GEMINI_API_KEY is not set on the server. Add it in Vercel → Settings → Environment Variables, then redeploy. Local: use frontend/.env.local",
-        500,
-        { code: "NO_GEMINI_KEY", headers: corsHeaders }
-      );
+      return jsonError("Analysis temporarily unavailable", 503, { code: "ANALYSIS_UNAVAILABLE" });
     }
-
     let article: { url: string; title: string; description: string; body: string };
     try {
-      article = await extractArticleFromUrl(url);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "fetch failed";
-      logRouteError("extension-analyze", e);
-      return jsonError(`Could not fetch article: ${msg}`, 502, {
-        code: "UPSTREAM_FETCH",
-        headers: corsHeaders,
-      });
+      article = await extractArticleFromUrl(url.href);
+    } catch {
+      logRouteError("extension-analyze");
+      return jsonError("Could not fetch article", 502, { code: "UPSTREAM_FETCH" });
     }
 
-    const outletRow: AdFontesRow | null = findOutletByUrl(url);
+    const outletRow: AdFontesRow | null = findOutletByUrl(article.url);
     const excerpt =
       article.body.trim().slice(0, 6000) ||
       "(No article body could be extracted from the page; judge from title, description, and URL only.)";
@@ -105,12 +66,8 @@ export async function POST(request: NextRequest) {
 
     const prompt = `You analyze news for political leaning and credibility. ${baselineNote}
 
-[URL] ${article.url}
-[Title] ${article.title}
-[Description] ${article.description}
-
-[Article excerpt]
-${excerpt}
+Untrusted article data as JSON:
+${JSON.stringify({ ...article, body: excerpt })}
 
 Output EXACTLY in this format (English labels, one value per line):
 
@@ -121,16 +78,12 @@ CONFIDENCE: (integer 0-100; how confident you are in this assessment)`;
     let raw: string;
     try {
       raw = await generateGeminiText(prompt);
-    } catch (geminiErr) {
-      const gm =
-        geminiErr instanceof Error ? geminiErr.message : String(geminiErr);
-      return jsonError(`Gemini API failed: ${gm}`, 502, {
-        code: "GEMINI_ERROR",
-        headers: corsHeaders,
-      });
+    } catch {
+      return jsonError("Analysis temporarily unavailable", 502, { code: "ANALYSIS_UNAVAILABLE" });
     }
 
     const extScores = parseExtensionResponse(raw);
+    if (!extScores) return jsonError("Analysis temporarily unavailable", 502, { code: "ANALYSIS_UNAVAILABLE" });
     const blended = blendReliabilityAndHorizontal(
       outletRow,
       extScores.credibility,
@@ -153,12 +106,10 @@ CONFIDENCE: (integer 0-100; how confident you are in this assessment)`;
               horizontalRank: outletRow.horizontalRank,
             }
           : null,
-      },
-      { headers: corsHeaders }
+      }
     );
-  } catch (e) {
-    logRouteError("extension-analyze", e);
-    const message = e instanceof Error ? e.message : "Unknown error";
-    return jsonError(message, 500, { code: "INTERNAL", headers: corsHeaders });
+  } catch {
+    logRouteError("extension-analyze");
+    return jsonError("Analysis failed", 500, { code: "INTERNAL" });
   }
 }

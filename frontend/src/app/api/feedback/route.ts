@@ -2,13 +2,17 @@ import { NextResponse } from "next/server";
 import { appendFeedbackCsv } from "@/lib/feedbackCsv";
 import { supabase } from "@/lib/supabase";
 import { readJsonBody } from "@/lib/readJsonBody";
+import { enforceRateLimit } from "@/lib/rateLimit";
+import { isOptionalText } from "@/lib/apiInput";
 import { jsonError, logRouteError } from "@/lib/apiErrors";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const parsed = await readJsonBody<Record<string, unknown>>(request);
+    const blocked = await enforceRateLimit(request, "feedback");
+    if (blocked) return blocked;
+    const parsed = await readJsonBody<Record<string, unknown>>(request, 112 * 1024);
     if (!parsed.ok) return parsed.response;
     const o = parsed.data;
     const rating = o.rating;
@@ -16,10 +20,13 @@ export async function POST(request: Request) {
       return jsonError('rating is required and must be "yes" or "no"', 400, { code: "BAD_REQUEST" });
     }
 
-    const url = typeof o.url === "string" ? o.url.slice(0, 8000) : "";
-    const title = typeof o.title === "string" ? o.title.slice(0, 2000) : "";
-    const commentRaw = typeof o.comment === "string" ? o.comment.trim() : "";
-    const comment = commentRaw.length > 0 ? commentRaw.slice(0, 8000) : null;
+    if (!isOptionalText(o.url, 8000) || !isOptionalText(o.title, 2000) ||
+        (o.comment !== null && !isOptionalText(o.comment, 8000))) {
+      return jsonError("Invalid feedback fields", 400, { code: "BAD_REQUEST" });
+    }
+    const url = o.url ?? "";
+    const title = o.title ?? "";
+    const comment = o.comment?.trim() || null;
 
     let csvSaved = false;
     try {
@@ -30,8 +37,8 @@ export async function POST(request: Request) {
         comment,
       });
       csvSaved = true;
-    } catch (e) {
-      console.error("feedback CSV append failed", e);
+    } catch {
+      console.error("[feedback] CSV append failed");
     }
 
     if (!supabase) {
@@ -39,7 +46,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: true, persisted: "csv" as const });
       }
       return jsonError(
-        "Could not save feedback. Supabase is not configured and the local log could not be written.",
+        "Could not save feedback",
         500,
         { code: "NO_PERSISTENCE_BACKEND" }
       );
@@ -53,7 +60,7 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      console.error("feedback insert", error);
+      console.error("[feedback] database insert failed");
       if (csvSaved) {
         return NextResponse.json({
           ok: true,
@@ -62,15 +69,15 @@ export async function POST(request: Request) {
         });
       }
       return jsonError(
-        "Could not save feedback. Check the feedback table and RLS policies, or try again.",
+        "Could not save feedback",
         500,
         { code: "FEEDBACK_INSERT_FAILED" }
       );
     }
 
     return NextResponse.json({ ok: true, persisted: "database" as const, dbSaved: true });
-  } catch (e) {
-    logRouteError("feedback", e);
+  } catch {
+    logRouteError("feedback");
     return jsonError("Unexpected error while saving feedback", 500, { code: "INTERNAL" });
   }
 }

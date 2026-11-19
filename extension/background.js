@@ -1,17 +1,19 @@
-const DEFAULT_BASE = "http://localhost:3000";
+importScripts("api-base.js");
 const STORAGE_KEY = "polarityLastResult";
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-  if (msg?.type !== "POLARITY_ANALYZE") return;
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== "POLARITY_ANALYZE" || sender.url !== chrome.runtime.getURL("popup.html")) return;
   const { url, apiBaseUrl } = msg;
-  const base = (apiBaseUrl || DEFAULT_BASE).replace(/\/$/, "");
 
   (async () => {
     try {
+      const base = parseApiBase(apiBaseUrl).origin;
       const fetchRes = await fetch(`${base}/api/fetch-news`, {
         method: "POST",
+        redirect: "error",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
+        signal: AbortSignal.timeout(20000),
       });
       const responseText = await fetchRes.text();
       let fetchData = {};
@@ -23,7 +25,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
             success: false,
             error: fetchRes.ok
               ? "Invalid JSON from fetch-news"
-              : `fetch-news (${fetchRes.status}): ${responseText.replace(/\s+/g, " ").trim().slice(0, 200)}`,
+              : `fetch-news (${fetchRes.status}): Request failed`,
             analyzedUrl: url,
             at: Date.now(),
           },
@@ -57,8 +59,10 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 
       const analyzeRes = await fetch(`${base}/api/analyze`, {
         method: "POST",
+        redirect: "error",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(55000),
       });
       const analyzeText = await analyzeRes.text();
       let analyzeData = {};
@@ -70,7 +74,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
             success: false,
             error: analyzeRes.ok
               ? "Invalid JSON from analyze"
-              : `analyze (${analyzeRes.status}): ${analyzeText.replace(/\s+/g, " ").trim().slice(0, 200)}`,
+              : `analyze (${analyzeRes.status}): Request failed`,
             analyzedUrl: url,
             at: Date.now(),
           },
